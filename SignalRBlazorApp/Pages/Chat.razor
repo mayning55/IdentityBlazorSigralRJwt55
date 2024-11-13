@@ -1,0 +1,97 @@
+﻿@page "/chat"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+@using Blazored.LocalStorage
+@using System.Security.Claims
+@using Microsoft.IdentityModel.JsonWebTokens
+@inject HttpClient Http
+@inject ILocalStorageService localStorageService
+
+@attribute [Authorize]
+
+
+<PageTitle>Chat</PageTitle>
+
+
+@* <AuthorizeView>
+<div class="form-group">
+<label>
+User: @context.User.Identity?.Name
+</label>
+</div>
+@foreach (var u in @context.User.Claims)
+{
+<div>@u.Type: @u.Value</div>
+}
+</AuthorizeView> *@
+<div class="form-group">
+    <label>
+        Message:
+        <input @bind="messageInput" size="50" />
+    </label>
+    <button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+</div>
+
+<hr>
+
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = [];
+    private string? messageInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        //.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        .WithUrl("https://localhost:7286/chathub", options =>
+        {
+            options.AccessTokenProvider = async () =>
+            {
+                string token = await localStorageService.GetItemAsStringAsync("auth")!;
+                return token;
+            };
+        })
+        .Build();
+
+        hubConnection.On<string,string>("ReceiveMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            messages.Add(encodedMsg);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        string localtoken = await localStorageService.GetItemAsStringAsync("auth")!;
+        var handler = new JsonWebTokenHandler();
+        var token = handler.ReadJsonWebToken(localtoken);
+        var username = token.Claims.FirstOrDefault(n => n.Type == ClaimTypes.Name)!.Value;
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", username.ToString(),messageInput);
+        }
+    }
+
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
