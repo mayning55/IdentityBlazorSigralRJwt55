@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using ClassLibrary.Data;
 using ClassLibrary.Settings;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using WebAPI.Hubs;
 
 namespace WebAPI.Controllers
 {
@@ -16,10 +18,12 @@ namespace WebAPI.Controllers
     public class PersonController : ControllerBase
     {
         private readonly EFCoreDBContext _context;
+        private readonly IHubContext<ChatHub> hubContext;
 
-        public PersonController(EFCoreDBContext context)
+        public PersonController(EFCoreDBContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            this.hubContext = hubContext;
         }
 
         // GET: Person/GetPersons
@@ -56,7 +60,7 @@ namespace WebAPI.Controllers
             };
             _context.Persons.Add(item);
             await _context.SaveChangesAsync();
-
+            await hubContext.Clients.All.SendAsync("NoteMessage","Update");
             return CreatedAtAction(nameof(GetPersonById),new { Id = person.Id }, person);
         }
 
@@ -73,7 +77,7 @@ namespace WebAPI.Controllers
 
             _context.Persons.Remove(person);
             await _context.SaveChangesAsync();
-
+            await hubContext.Clients.All.SendAsync("NoteMessage", "Update");
             return NoContent();
         }
 
@@ -95,6 +99,7 @@ namespace WebAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("NoteMessage", "Update");
             }
             catch (DbUpdateConcurrencyException)
             {

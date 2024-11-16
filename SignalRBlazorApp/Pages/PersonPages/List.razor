@@ -1,6 +1,7 @@
 ﻿@page "/Persons"
 @page "/Persons/List"
 @using Blazored.LocalStorage
+@using Microsoft.AspNetCore.SignalR.Client
 @inject HttpClient Http
 @inject IConfiguration Config
 @inject ILocalStorageService localStorageService
@@ -88,7 +89,31 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        
+        HubConnection hubConnection = new HubConnectionBuilder()
+        //.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        .WithUrl("https://localhost:7286/chathub", options =>
+        {
+            options.AccessTokenProvider = async () =>
+            {
+                string token = await localStorageService.GetItemAsStringAsync("auth")!;
+                return token;
+            };
+        })
+        .Build();
+
+        hubConnection.On<string>("NoteMessage", async notemsg => 
+        {
+            //Console.WriteLine(user);
+            //Console.WriteLine(notemsg);
+            //await GetPersons();
+            if(notemsg=="Update")
+            {
+            await GetPersons();
+            }
+            await InvokeAsync(StateHasChanged);
+        });
+        await hubConnection.StartAsync();
+
         serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Person";
         await GetPersons();
     }
