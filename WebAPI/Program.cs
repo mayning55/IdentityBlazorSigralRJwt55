@@ -1,9 +1,8 @@
 using ClassLibrary.Services;
 using ClassLibrary.Settings;
 using Microsoft.Net.Http.Headers;
-
 using Microsoft.AspNetCore.ResponseCompression;
-using WebAPI.Hubs;//5
+using WebAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +23,10 @@ builder.Services.AddResponseCompression(opts =>
 
 
 
-builder.Services.DIServices(builder.Configuration);//!×¢²á·şÎñ
+builder.Services.DIServices(builder.Configuration);//!æ³¨å†Œå®¹å™¨æœåŠ¡
 
-builder.Services.AddHostedService<ClassInit>();//³õÊ¼»¯¹ÜÀíÔ±AdminĞÅÏ¢
-builder.Services.AddScoped<InitAdmin>();
+builder.Services.AddHostedService<ClassInit>();//æ³¨å†Œæ‰˜ç®¡æœåŠ¡ï¼Œåˆå§‹åŒ–Adminä¿¡æ¯
+builder.Services.AddScoped<InitAdmin>();//åˆå§‹åŒ–Adminç”¨æˆ·ï¼Œå®Œæˆåå¯åˆ é™¤ã€‚
 
 var app = builder.Build();
 
@@ -44,13 +43,13 @@ if (app.Environment.IsDevelopment())
         .AllowAnyMethod()
         .AllowAnyHeader()
         .WithHeaders(HeaderNames.ContentType);
-    });//!
+    });//è·¨åŸŸè¯·æ±‚ï¼šå‚é˜…ï¼šhttps://learn.microsoft.com/zh-cn/aspnet/core/security/cors?view=aspnetcore-8.0
 }
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();//Éí·İÑéÖ¤,ÔÚCORS¿çÓòºó
-app.UseAuthorization();//ÊÚÈ¨,ÔÚÉí·İÑéÖ¤ºó
+app.UseAuthentication();//èº«ä»½éªŒè¯ï¼Œåœ¨CORSåï¼Œ
+app.UseAuthorization();//æˆæƒï¼Œåœ¨èº«ä»½éªŒè¯åã€‚
 
 app.MapControllers();
 

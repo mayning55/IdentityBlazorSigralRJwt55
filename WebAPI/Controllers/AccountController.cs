@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -15,10 +15,10 @@ namespace WebAPI.Controllers
             this.user = user;
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<LoginResponse>> LogUserIn(LoginRequest loginRequest)
+        [HttpPost]
+        public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
         {
-            var result = await user.LoginrUserAsync(loginRequest);
+            var result = await user.LoginUserAsync(loginRequest);
             return Ok(result);
         }
     }

@@ -5,6 +5,9 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace SignalRBlazorApp
 {
+    /// <summary>
+    /// 用户登录状态，访问需要授权的页面时带上保存在本地的Token。
+    /// </summary>
     public class LocalAuthenticationStateProvider : AuthenticationStateProvider
     {
         private const string LocalStorageKey = "auth";
@@ -17,7 +20,7 @@ namespace SignalRBlazorApp
 
         private readonly ClaimsPrincipal anonymous = new(new ClaimsPrincipal());//未登录
 
-        public override async  Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             string toke = await localStorageService.GetItemAsStringAsync(LocalStorageKey)!;
             if (string.IsNullOrEmpty(toke))
@@ -70,7 +73,7 @@ namespace SignalRBlazorApp
 
             return (name);
         }
-        public async Task UpdateauthenticationState(string jwtToken)
+        public async Task UpdateAuthenticationState(string jwtToken)
         {
             var claims = new ClaimsPrincipal();
             if (!string.IsNullOrEmpty(jwtToken))

@@ -9,6 +9,9 @@ using System.Text;
 
 namespace ClassLibrary.Services
 {
+    /// <summary>
+    /// 用户登录验证，返回带用户名和角色及相关信息的Token。
+    /// </summary>
     internal class LoginAuth : IUser
     {
         private readonly UserManager<UserExtend> userManager;
@@ -20,7 +23,7 @@ namespace ClassLibrary.Services
             this.configuration = configuration;
         }
 
-        public async Task<LoginResponse> LoginrUserAsync(LoginRequest loginRequest)
+        public async Task<LoginResponse> LoginUserAsync(LoginRequest loginRequest)
         {
             var user = await userManager.FindByNameAsync(loginRequest.UserName);
             if (user == null)
@@ -42,6 +45,12 @@ namespace ClassLibrary.Services
                 return new LoginResponse(true, "Login successfully", CreateToken(user,roleList));
             }
         }
+        /// <summary>
+        /// 用户登录成功生成Token
+        /// </summary>
+        /// <param name="user"></param>登录的用户
+        /// <param name="rolename"></param>登录用户的角色列表
+        /// <returns></returns>
         private string CreateToken(UserExtend user,List<string> rolename)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:SigningKey"]!));

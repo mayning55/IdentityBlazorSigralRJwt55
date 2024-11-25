@@ -31,7 +31,7 @@
         if (result.Flag)
         {
             var localAuthStateProvider = (LocalAuthenticationStateProvider)AuthStateProvider;
-            await localAuthStateProvider.UpdateauthenticationState(result.Token);
+            await localAuthStateProvider.UpdateAuthenticationState(result.Token);
             NavManager.NavigateTo("/", forceLoad: true);
         }
         else

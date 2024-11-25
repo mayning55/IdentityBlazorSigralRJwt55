@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary.Settings
 {
+    /// <summary>
+    /// 初始化Admin用户，初始化完成后可删除。
+    /// 还可以使用Data-Seed,参阅：https://learn.microsoft.com/zh-cn/ef/core/modeling/data-seeding
+    /// </summary>
     public class InitAdmin
     {
         private readonly UserManager<UserExtend> userManager;
@@ -49,7 +53,7 @@ namespace ClassLibrary.Settings
             {
                 var result = await userManager.AddToRoleAsync(userAdmin, "NormalUser");
             }
-            var user1= await userManager.FindByNameAsync("User1");
+            var user1 = await userManager.FindByNameAsync("User1");
             if (user1 == null)
             {
                 user1 = new UserExtend()

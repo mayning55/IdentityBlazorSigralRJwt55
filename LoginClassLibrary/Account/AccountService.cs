@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace LoginClassLibrary.Account
 {
+    /// <summary>
+    /// 通过WebAPI提交登录
+    /// </summary>
     public class AccountService : IAccount
     {
         private readonly HttpClient httpClient;
@@ -18,7 +21,7 @@ namespace LoginClassLibrary.Account
         }
         public async Task<LoginResponse> LogInAccountAsync(LoginRequest model)
         {
-            var response = await httpClient.PostAsJsonAsync("api/account/login", model);
+            var response = await httpClient.PostAsJsonAsync("account/login", model);
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
             return result;
         }

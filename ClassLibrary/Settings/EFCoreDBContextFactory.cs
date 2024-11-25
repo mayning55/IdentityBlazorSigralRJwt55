@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary.Settings
 {
+    /// <summary>
+    /// EF迁移用，迁移完可删除。
+    /// </summary>
     public class EFCoreDBContextFactory:IDesignTimeDbContextFactory<EFCoreDBContext>
     {
         public EFCoreDBContext CreateDbContext(string[] args)

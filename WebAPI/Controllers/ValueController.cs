@@ -5,6 +5,9 @@ using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
+    /// <summary>
+    /// 验证用户角色权限
+    /// </summary>
     [Route("[controller]/[action]")]
     [ApiController]
     public class ValueController : ControllerBase

@@ -8,6 +8,6 @@ namespace LoginClassLibrary
 {
     public interface IUser
     {
-        Task<LoginResponse> LoginrUserAsync(LoginRequest loginRequest);
+        Task<LoginResponse> LoginUserAsync(LoginRequest loginRequest);
     }
 }

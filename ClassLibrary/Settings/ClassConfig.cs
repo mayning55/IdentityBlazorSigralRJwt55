@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary.Settings
 {
+    /// <summary>
+    /// 实体类型配置
+    /// </summary>
     public class ClassConfig
     {
         public class PersonConfig : IEntityTypeConfiguration<Person>

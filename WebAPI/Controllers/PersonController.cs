@@ -60,8 +60,8 @@ namespace WebAPI.Controllers
             };
             _context.Persons.Add(item);
             await _context.SaveChangesAsync();
-            await hubContext.Clients.All.SendAsync("NoteMessage","Update");
-            return CreatedAtAction(nameof(GetPersonById),new { Id = person.Id }, person);
+            await hubContext.Clients.All.SendAsync("NoteMessage", "Update");//变更后发送信息给在线用户重新加载List页面，下同。
+            return CreatedAtAction(nameof(GetPersonById), new { Id = person.Id }, person);
         }
 
         // DELETE: Person/DeletePerson
@@ -87,7 +87,7 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<ActionResult<Person>> EditPerson(long id, Person person)
         {
-            var newPerson= await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
+            var newPerson = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
 
             if (id != newPerson.Id)
             {

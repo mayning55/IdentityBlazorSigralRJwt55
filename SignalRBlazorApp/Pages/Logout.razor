@@ -4,7 +4,7 @@
     protected async override Task OnInitializedAsync()
     {
         var localAuthStateProvider = (LocalAuthenticationStateProvider)AuthStateProvider;
-        await localAuthStateProvider.UpdateauthenticationState(null!);
+        await localAuthStateProvider.UpdateAuthenticationState(null!);//用户退出登录时清除保存在本地的Token。
         NavManager.NavigateTo("/", forceLoad: true);
     }
 

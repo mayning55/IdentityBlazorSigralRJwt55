@@ -11,6 +11,9 @@ using System.Text;
 
 namespace ClassLibrary.Services
 {
+    /// <summary>
+    /// 通过依赖注入，将服务添加至容器，包含：数据库连接，Jwt，Identity和用户登录校验服务。
+    /// </summary>
     public static class ServiceContainer
     {
         public static IServiceCollection DIServices(this IServiceCollection services,

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary.Settings
 {
+    /// <summary>
+    /// 通过托管服务初始化Admin用户
+    /// </summary>
     public class ClassInit : BackgroundService
     {
         private readonly IServiceScope iServiceScope;

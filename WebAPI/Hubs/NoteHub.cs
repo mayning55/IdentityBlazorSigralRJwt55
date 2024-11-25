@@ -2,7 +2,10 @@
 
 namespace WebAPI.Hubs
 {
-    public class NoteHub:Hub
+    /// <summary>
+    /// Person变更后发送信息给在线用户，重新加载List页面。
+    /// </summary>
+    public class NoteHub : Hub
     {
         public async Task SendMessage(string notemsg)
         {
