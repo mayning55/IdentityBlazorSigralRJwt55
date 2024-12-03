@@ -23,7 +23,7 @@ builder.Services.AddResponseCompression(opts =>
 
 
 
-builder.Services.DIServices(builder.Configuration);//!注册容器服务
+builder.Services.DIServices(builder.Configuration);//!注册服务
 
 builder.Services.AddHostedService<ClassInit>();//注册托管服务，初始化Admin信息
 builder.Services.AddScoped<InitAdmin>();//初始化Admin用户，完成后可删除。
