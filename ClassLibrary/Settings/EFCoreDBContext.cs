@@ -21,5 +21,6 @@ namespace ClassLibrary.Settings
         }
 
         public DbSet<Person> Persons { get; set; }
+        public DbSet<RefreshTokenInfo> RefreshTokenInfos { get; set; }
     }
 }

@@ -1,10 +1,12 @@
 ﻿@page "/logout"
+@using LoginClassLibrary
+@using SignalRBlazorApp.Services
 
 @code {
     protected async override Task OnInitializedAsync()
     {
         var localAuthStateProvider = (LocalAuthenticationStateProvider)AuthStateProvider;
-        await localAuthStateProvider.UpdateAuthenticationState(null!);//用户退出登录时清除保存在本地的Token。
+        await localAuthStateProvider.UpdateAuthenticationState(new UserSession());//用户退出登录时清除保存在本地的Token。
         NavManager.NavigateTo("/", forceLoad: true);
     }
 

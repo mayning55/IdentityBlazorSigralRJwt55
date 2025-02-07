@@ -16,7 +16,7 @@ namespace ClassLibrary.Settings
         public EFCoreDBContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<EFCoreDBContext>();
-            optionsBuilder.UseSqlServer("Server=.;Database=IBSJ_DB;User Id=sa;Password=123132;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=.;Database=IBSJ_DB;User Id=sa;Password=123;TrustServerCertificate=True;");
             return new EFCoreDBContext(optionsBuilder.Options);
         }
 

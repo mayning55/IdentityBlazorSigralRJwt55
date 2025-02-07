@@ -1,8 +1,6 @@
 ﻿@page "/Persons"
-@page "/Persons/List"
 @using Blazored.LocalStorage
 @using Microsoft.AspNetCore.SignalR.Client
-@inject HttpClient Http
 @inject IConfiguration Config
 @inject ILocalStorageService localStorageService
 @inject NavigationManager NavigationManager
@@ -15,17 +13,22 @@
 else
 {
     <tr id="addRow">
-                <td></td>
-                <td>
-                    <input @bind="newItemNumber" placeholder="New Number" />
-                </td>
-                <td>
-                    <input @bind="newItemFirstName" placeholder="New FirstName" />
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-success" @onclick="AddPerson">Add</button>
-                </td>
-            </tr>
+        <td></td>
+        <td>
+            <input @bind="newItemNumber" placeholder="New Number" />
+        </td>
+        <td>
+            <input @bind="newItemFirstName" placeholder="New FirstName" />
+        </td>
+        <td class="text-center">
+            <button class="btn btn-success" @onclick="AddPerson">Add</button>
+        </td>
+        <td>
+            <label>Search: <input @bind="searchString" /></label>
+            <button class="btn btn-success" @onclick="Filter">Filter</button>
+        </td>
+
+    </tr>
     <table class="table">
 
         <thead>
@@ -34,8 +37,8 @@ else
                     <label>ID</label>
                 </th>
                 <th class="text-center">
-                    <label>Nubmer</label>
-                </th
+                    <label>Number</label>
+                </th>
                 <th class="text-center">
                     <label>FirstName</label>
                 </th>
@@ -58,7 +61,7 @@ else
                     </button>
                 </td>
             </tr>
-            @foreach(var item in persons)
+            @foreach (var item in persons)
             {
                 <tr>
                     <td>@item.Id</td>
@@ -74,18 +77,35 @@ else
                     </td>
                 </tr>
             }
-         </tbody>
-     </table>
+        </tbody>
+    </table>
+    <div>
+        <button disabled="@firstPage" @onclick="GoToFirstPage">First</button>
+        <button disabled="@firstPage" @onclick="GoToPreviousPage">Previous</button>
+        <span>Page @currentPage of @totalPages</span>
+        <button disabled="@lastPage" @onclick="GoToNextPage">Next</button>
+        <button disabled="@lastPage" @onclick="GoToLastPage">Last</button>
+    </div>
 }
 
 
 @code {
-    private Person[]? persons;
+    private IEnumerable<Person>? dateSource { get; set; }
+    private List<Person> date = new();
+    private Person[]? persons { get; set; }
     private Person person = new();
     private string editRowStyle = "none";
     private string? newItemNumber;
     private string? newItemFirstName;
     private string? serviceRequest;
+    private string? searchString { get; set; }
+    private string? numberOrder { get; set; }
+    private int currentPage { get; set; } = 1;
+    private int pageSize { get; set; } = 5;
+    private int totalPages { get; set; }
+    private bool firstPage => currentPage == 1;
+    private bool lastPage => currentPage == totalPages;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,7 +116,8 @@ else
             options.AccessTokenProvider = async () =>
             {
                 string token = await localStorageService.GetItemAsStringAsync("auth")!;
-                return token;
+                var deserializeToken = Serializations.DeserializeJsonString<UserSession>(token);
+                return deserializeToken.Token;
             };
         })
         .Build();
@@ -109,45 +130,60 @@ else
             //await GetPersons();
             if(notemsg=="Update")
             {
-            await GetPersons();
+                await GetPersons();
             }
             await InvokeAsync(StateHasChanged);
         });
-        await hubConnection.StartAsync();
-
+        await hubConnection.StartAsync();        
         serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Person";
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var requestUrl = $"{serviceRequest}/GetPersons";
+        dateSource = await httpClient.GetFromJsonAsync<Person[]>(requestUrl);
+        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
+        date = new List<Person>(dateSource);
         await GetPersons();
+
     }
 
     private async Task GetPersons()
+    {        
+        if (string.IsNullOrEmpty(searchString))
+        {   
+            persons = date.Skip((currentPage - 1) * pageSize).Take(pageSize).ToArray();
+        }
+        else
+        {
+            date = date.Where(p => p.FirstName.Contains(searchString)).ToList();
+            totalPages = date.Count() % pageSize == 0 ? date.Count() / pageSize : date.Count() / pageSize + 1;
+            persons = date.Skip((currentPage - 1) * pageSize).Take(pageSize).ToArray();
+        }
+    }
+    private async Task Filter()
     {
-        string token = await localStorageService.GetItemAsStringAsync("auth")!;
-        var requestUri = $"{serviceRequest}/GetPersons";
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        persons = await Http.GetFromJsonAsync<Person[]>(requestUri);
-
+        currentPage = 1;
+        await OnInitializedAsync();
     }
 
     private async Task AddPerson()
     {
-        string token = await localStorageService.GetItemAsStringAsync("auth")!;
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         if(!string.IsNullOrEmpty(newItemNumber) && !string.IsNullOrEmpty(newItemFirstName))
         {
             var addPerson = new Person { Number = newItemNumber, FirstName = newItemFirstName };
-            await Http.PostAsJsonAsync($"{serviceRequest}/AddPerson", addPerson);
+            await httpClient.PostAsJsonAsync($"{serviceRequest}/AddPerson", addPerson);
             newItemNumber = string.Empty;
             newItemFirstName = string.Empty;
             StateHasChanged();
-            await GetPersons();
+            await OnInitializedAsync();
             editRowStyle = "none";
         }
     }
 
     private async Task EditPerson(long id)
     {
-        string token = await localStorageService.GetItemAsStringAsync("auth")!;
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         if(persons is not null )
         {
             person = persons.Single(i => i.Id == id);
@@ -156,30 +192,49 @@ else
     }
     private async Task SaveItem()
     {
-        
+        var httpClient = await getHttpClient.GetPrivateHttpClient();        
         if(person is not null)
         {
-            await Http.PutAsJsonAsync($"{serviceRequest}/EditPerson?id={person.Id}", person);
+            await httpClient.PutAsJsonAsync($"{serviceRequest}/EditPerson?id={person.Id}", person);
         }
         await GetPersons();
         StateHasChanged();
         editRowStyle = "none";
     }
-        private async Task CancelChange()
+    private async Task CancelChange()
     {
         await GetPersons();
         editRowStyle = "none";
     }
     private async Task DeletePerson(long id)
     {
-        string token = await localStorageService.GetItemAsStringAsync("auth")!;
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        await Http.DeleteAsync($"{serviceRequest}/DeletePerson?id="+ Convert.ToInt32(id));
-        await GetPersons();
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        await httpClient.DeleteAsync($"{serviceRequest}/DeletePerson?id="+ Convert.ToInt32(id));
+        await OnInitializedAsync();
         StateHasChanged();
         editRowStyle = "none";
     }
-
+    private async void GoToFirstPage()
+    {
+        currentPage = 1;
+        await GetPersons();
+    }
+    private async void GoToNextPage()
+    {        
+        currentPage++;
+        await GetPersons();
+    }
+    private async void GoToPreviousPage()
+    {
+        currentPage--;
+        await GetPersons();
+    }
+    private async void GoToLastPage()
+    {
+        currentPage = totalPages;
+        await GetPersons();
+    }
     public class Person
     {
         public long Id { get; set; }

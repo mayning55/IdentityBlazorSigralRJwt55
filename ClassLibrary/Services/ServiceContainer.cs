@@ -1,6 +1,6 @@
 ﻿using ClassLibrary.Data;
 using ClassLibrary.Settings;
-using LoginClassLibrary;
+using LoginClassLibrary.Login;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using System.Text;
 namespace ClassLibrary.Services
 {
     /// <summary>
-    /// 通过依赖注入，将服务添加至容器，包含：数据库连接，Jwt，Identity和用户登录校验服务。
+    /// 通过ConfigureServices 方法配置各服务，包含：数据库连接，Jwt，Identity和用户登录校验服务。
     /// </summary>
     public static class ServiceContainer
     {
@@ -35,6 +35,7 @@ namespace ClassLibrary.Services
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromSeconds(0),//时钟偏移，过期时间是偏移时间+有效时间
                     ValidIssuer = configuration["JWT:Issuer"],
                     ValidAudience = configuration["JWT:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey
@@ -57,7 +58,6 @@ namespace ClassLibrary.Services
                 options.Password.RequiredUniqueChars = 3;//可重复唯一
                 options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultAuthenticatorProvider;//根据Token重置密码
             });
-            services.AddScoped<IUser, LoginAuth>();
             return services;
         }
     }

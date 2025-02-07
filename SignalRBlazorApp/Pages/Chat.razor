@@ -57,7 +57,8 @@ User: @context.User.Identity?.Name
             options.AccessTokenProvider = async () =>
             {
                 string token = await localStorageService.GetItemAsStringAsync("auth")!;
-                return token;
+                var deserializeToken = Serializations.DeserializeJsonString<UserSession>(token);
+                return deserializeToken.Token;
             };
         })
         .Build();
@@ -75,8 +76,9 @@ User: @context.User.Identity?.Name
     private async Task Send()
     {
         string localtoken = await localStorageService.GetItemAsStringAsync("auth")!;
+        var deserializeToken = Serializations.DeserializeJsonString<UserSession>(localtoken);
         var handler = new JsonWebTokenHandler();
-        var token = handler.ReadJsonWebToken(localtoken);
+        var token = handler.ReadJsonWebToken(deserializeToken.Token);
         var username = token.Claims.FirstOrDefault(n => n.Type == ClaimTypes.Name)!.Value;
         if (hubConnection is not null)
         {

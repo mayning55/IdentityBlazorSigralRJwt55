@@ -1,5 +1,7 @@
 ﻿@page "/login"
 @using LoginClassLibrary
+@using SignalRBlazorApp.Services
+
 
 <div class="alert alert-info" mb-3>@Message</div>
 <EditForm Model="login" OnValidSubmit="LoginAsync">
@@ -27,11 +29,11 @@
     LoginRequest login = new();
     async Task LoginAsync()
     {
-        var result = await AccountService.LogInAccountAsync(login);
+        var result = await accountService.LoginAsync(login);
         if (result.Flag)
         {
             var localAuthStateProvider = (LocalAuthenticationStateProvider)AuthStateProvider;
-            await localAuthStateProvider.UpdateAuthenticationState(result.Token);
+            await localAuthStateProvider.UpdateAuthenticationState(new UserSession() { Token = result.Token, RefreshToken = result.RefreshToken });
             NavManager.NavigateTo("/", forceLoad: true);
         }
         else

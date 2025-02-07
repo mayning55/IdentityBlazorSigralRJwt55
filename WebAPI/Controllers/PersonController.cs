@@ -17,12 +17,12 @@ namespace WebAPI.Controllers
     [ApiController]
     public class PersonController : ControllerBase
     {
-        private readonly EFCoreDBContext _context;
+        private readonly EFCoreDBContext dbContext;
         private readonly IHubContext<ChatHub> hubContext;
 
-        public PersonController(EFCoreDBContext context, IHubContext<ChatHub> hubContext)
+        public PersonController(EFCoreDBContext dbContext, IHubContext<ChatHub> hubContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
             this.hubContext = hubContext;
         }
 
@@ -31,13 +31,27 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
         {
-            return await _context.Persons.ToListAsync();
+            return await dbContext.Persons.ToListAsync();
+        }
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByName(string? filterName,int currentPage)
+        {
+            if (string.IsNullOrWhiteSpace(filterName))
+            {
+                return await dbContext.Persons.Skip((currentPage-1)*5).Take(5).ToListAsync();
+            }
+            else
+            {
+                return await dbContext.Persons.Where(p => p.FirstName.Contains(filterName)).ToListAsync();
+            }
+            
         }
         // GET: Person/GetPersonByNumber
         [HttpGet]
         public async Task<ActionResult<Person>> GetPersonById(long id)
         {
-            var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
+            var person = await dbContext.Persons.FirstOrDefaultAsync(p => p.Id == id);
 
             if (person == null)
             {
@@ -58,8 +72,8 @@ namespace WebAPI.Controllers
                 Number = person.Number,
                 FirstName = person.FirstName,
             };
-            _context.Persons.Add(item);
-            await _context.SaveChangesAsync();
+            dbContext.Persons.Add(item);
+            await dbContext.SaveChangesAsync();
             await hubContext.Clients.All.SendAsync("NoteMessage", "Update");//变更后发送信息给在线用户重新加载List页面，下同。
             return CreatedAtAction(nameof(GetPersonById), new { Id = person.Id }, person);
         }
@@ -69,14 +83,14 @@ namespace WebAPI.Controllers
         [Authorize(Roles = "AdminRole")]
         public async Task<IActionResult> DeletePerson(long id)
         {
-            var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
+            var person = await dbContext.Persons.FirstOrDefaultAsync(p => p.Id == id);
             if (person == null)
             {
                 return NotFound();
             }
 
-            _context.Persons.Remove(person);
-            await _context.SaveChangesAsync();
+            dbContext.Persons.Remove(person);
+            await dbContext.SaveChangesAsync();
             await hubContext.Clients.All.SendAsync("NoteMessage", "Update");
             return NoContent();
         }
@@ -87,7 +101,7 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<ActionResult<Person>> EditPerson(long id, Person person)
         {
-            var newPerson = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
+            var newPerson = await dbContext.Persons.FirstOrDefaultAsync(p => p.Id == id);
 
             if (id != newPerson.Id)
             {
@@ -95,10 +109,10 @@ namespace WebAPI.Controllers
             }
             newPerson.Number = person.Number;
             newPerson.FirstName = person.FirstName;
-            _context.Persons.Update(newPerson);
+            dbContext.Persons.Update(newPerson);
             try
             {
-                await _context.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
                 await hubContext.Clients.All.SendAsync("NoteMessage", "Update");
             }
             catch (DbUpdateConcurrencyException)
@@ -117,7 +131,7 @@ namespace WebAPI.Controllers
         }
         private bool PersonExists(long id)
         {
-            return _context.Persons.Any(e => e.Id == id);
+            return dbContext.Persons.Any(e => e.Id == id);
         }
     }
 }

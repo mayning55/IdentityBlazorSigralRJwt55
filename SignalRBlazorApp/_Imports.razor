@@ -1,6 +1,7 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
 @using LoginClassLibrary.Account
+@using LoginClassLibrary.Login
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
@@ -10,6 +11,8 @@
 @using Microsoft.JSInterop
 @using SignalRBlazorApp
 @using SignalRBlazorApp.Layout
-@inject IAccount AccountService
+@using SignalRBlazorApp.Services
+@inject GetHttpClient getHttpClient
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IUser accountService
 @inject NavigationManager NavManager

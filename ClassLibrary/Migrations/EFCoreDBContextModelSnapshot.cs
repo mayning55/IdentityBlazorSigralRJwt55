@@ -43,6 +43,25 @@ namespace ClassLibrary.Migrations
                     b.ToTable("Persons", (string)null);
                 });
 
+            modelBuilder.Entity("ClassLibrary.Data.RefreshTokenInfo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RefreshTokenInfos");
+                });
+
             modelBuilder.Entity("ClassLibrary.Data.UserExtend", b =>
                 {
                     b.Property<string>("Id")

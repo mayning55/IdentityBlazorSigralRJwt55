@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\WebAPI\\WebAPI.csproj": {}
+    "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\WebAPI\\WebAPI.csproj": {}
   },
   "projects": {
-    "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\ClassLibrary.csproj": {
+    "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\ClassLibrary.csproj",
+        "projectUniqueName": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj",
         "projectName": "ClassLibrary",
-        "projectPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\ClassLibrary.csproj",
+        "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj",
         "packagesPath": "C:\\Users\\hdus\\.nuget\\packages\\",
-        "outputPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\obj\\",
+        "outputPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
           "C:\\Users\\hdus\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,15 +26,14 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\LoginClassLibrary.csproj": {
-                "projectPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\LoginClassLibrary.csproj"
+              "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj": {
+                "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj"
               }
             }
           }
@@ -43,8 +46,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
-        }
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -89,21 +93,25 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\LoginClassLibrary.csproj": {
+    "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\LoginClassLibrary.csproj",
+        "projectUniqueName": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj",
         "projectName": "LoginClassLibrary",
-        "projectPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\LoginClassLibrary.csproj",
+        "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj",
         "packagesPath": "C:\\Users\\hdus\\.nuget\\packages\\",
-        "outputPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\LoginClassLibrary\\obj\\",
+        "outputPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
           "C:\\Users\\hdus\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -111,7 +119,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -128,8 +135,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
-        }
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -150,21 +158,25 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\WebAPI\\WebAPI.csproj": {
+    "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\WebAPI\\WebAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\WebAPI\\WebAPI.csproj",
+        "projectUniqueName": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\WebAPI\\WebAPI.csproj",
         "projectName": "WebAPI",
-        "projectPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\WebAPI\\WebAPI.csproj",
+        "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\WebAPI\\WebAPI.csproj",
         "packagesPath": "C:\\Users\\hdus\\.nuget\\packages\\",
-        "outputPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\WebAPI\\obj\\",
+        "outputPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\WebAPI\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
           "C:\\Users\\hdus\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -172,15 +184,14 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\ClassLibrary.csproj": {
-                "projectPath": "D:\\VBS\\C\\IdentityBlazorSignalRJWT_ing\\ClassLibrary\\ClassLibrary.csproj"
+              "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj": {
+                "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj"
               }
             }
           }
@@ -193,8 +204,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
-        }
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -238,7 +250,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

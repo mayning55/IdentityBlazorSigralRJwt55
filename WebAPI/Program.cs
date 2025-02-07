@@ -3,6 +3,8 @@ using ClassLibrary.Settings;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.ResponseCompression;
 using WebAPI.Hubs;
+using LoginClassLibrary.Login;
+using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +25,20 @@ builder.Services.AddResponseCompression(opts =>
 
 
 
-builder.Services.DIServices(builder.Configuration);//!注册容器服务
+builder.Services.DIServices(builder.Configuration);//!注册服务
+builder.Services.AddScoped<IUser, LoginAuth>();//@
 
 builder.Services.AddHostedService<ClassInit>();//注册托管服务，初始化Admin信息
 builder.Services.AddScoped<InitAdmin>();//初始化Admin用户，完成后可删除。
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())//种子 数据,初始化数据的另一种方式。
+{
+    var services = scope.ServiceProvider;
+
+    SeedDate.Initialize(services);
+}
 
 app.UseResponseCompression();//5
 
