@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 namespace SignalRBlazorApp
 {
     /// <summary>
-    /// 用户登录验证
+    /// 用户登录验证和刷新Token
     /// </summary>
     /// <param name="getHttpClient"></param>
     public class AccountAuth(GetHttpClient getHttpClient) : IUser
