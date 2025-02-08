@@ -1,18 +1,19 @@
 ﻿@page "/Persons"
 @using Blazored.LocalStorage
 @using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.QuickGrid
 @inject IConfiguration Config
 @inject ILocalStorageService localStorageService
 @inject NavigationManager NavigationManager
 
 
-@if(persons == null)
+@if (dateSource == null)
 {
     <p>None!</p>
 }
 else
 {
-    <tr id="addRow">
+    <tr id="addRow" style="display:@addRowStyle">
         <td></td>
         <td>
             <input @bind="newItemNumber" placeholder="New Number" />
@@ -21,90 +22,59 @@ else
             <input @bind="newItemFirstName" placeholder="New FirstName" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="AddPerson">Add</button>
+            <button class="btn" @onclick="AddPerson">Add</button>
         </td>
         <td>
-            <label>Search: <input @bind="searchString" /></label>
-            <button class="btn btn-success" @onclick="Filter">Filter</button>
-        </td>
+            <p>
+                <input type="search" @bind="searchString" @bind:event="oninput" placeholder="Search" />
+            </p>
+        </td>        
+    </tr>
+    <tr>
 
     </tr>
-    <table class="table">
-
-        <thead>
-            <tr>
-                <th class="text-center">
-                    <label>ID</label>
-                </th>
-                <th class="text-center">
-                    <label>Number</label>
-                </th>
-                <th class="text-center">
-                    <label>FirstName</label>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr id="editRow" style="display:@editRowStyle">
-                <td class="text-center">
-                    <input @bind="person.Number" />
-                </td>
-                <td class="text-center">
-                    <input @bind="person.FirstName" />
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-success" @onclick="SaveItem">
-                        Save
-                    </button>
-                    <button class="btn btn-danger" @onclick="CancelChange">
-                        Cancel
-                    </button>
-                </td>
-            </tr>
-            @foreach (var item in persons)
-            {
-                <tr>
-                    <td>@item.Id</td>
-                    <td>@item.Number</td>
-                    <td>@item.FirstName</td>
-                    <td class="text-center">
-                        <button class="btn btn-warning" @onclick="@(()=> EditPerson(item.Id))">
-                            Edit
-                        </button>
-                        <button class="btn btn-warning" @onclick="@(async ()=> await DeletePerson(item.Id))">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <tr id="editRow" style="display:@editRowStyle">
+        <td class="text-center">
+            <input @bind="person.Number" />
+        </td>
+        <td class="text-center">
+            <input @bind="person.FirstName" />
+        </td>
+        <td class="text-center">
+            <button class="btn btn-success" @onclick="SaveItem">
+                Save
+            </button>
+            <button class="btn btn-danger" @onclick="CancelChange">
+                Cancel
+            </button>
+        </td>
+    </tr>
     <div>
-        <button disabled="@firstPage" @onclick="GoToFirstPage">First</button>
-        <button disabled="@firstPage" @onclick="GoToPreviousPage">Previous</button>
-        <span>Page @currentPage of @totalPages</span>
-        <button disabled="@lastPage" @onclick="GoToNextPage">Next</button>
-        <button disabled="@lastPage" @onclick="GoToLastPage">Last</button>
+        <QuickGrid Class="table" Items="PersonsFilter" Pagination="pagination">
+            <PropertyColumn Property="person => person.Id" />
+            <PropertyColumn Property="person => person.Number" Sortable="true"/>
+            <PropertyColumn Property="person => person.FirstName" />
+
+            <TemplateColumn Context="person">
+                <button class="btn" @onclick="@(()=> EditPerson(person.Id))">Edit</button> |
+                <button class="btn" @onclick="@(()=> DeletePerson(person.Id))">Delete</button>
+            </TemplateColumn>
+        </QuickGrid>
     </div>
+    <Paginator State="pagination" />
 }
 
-
 @code {
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
     private IEnumerable<Person>? dateSource { get; set; }
-    private List<Person> date = new();
-    private Person[]? persons { get; set; }
     private Person person = new();
     private string editRowStyle = "none";
+    private string addRowStyle = "table-row";
     private string? newItemNumber;
     private string? newItemFirstName;
     private string? serviceRequest;
-    private string? searchString { get; set; }
-    private string? numberOrder { get; set; }
-    private int currentPage { get; set; } = 1;
-    private int pageSize { get; set; } = 5;
-    private int totalPages { get; set; }
-    private bool firstPage => currentPage == 1;
-    private bool lastPage => currentPage == totalPages;
+    private string? searchString { get; set; } = string.Empty;
+
 
 
     protected override async Task OnInitializedAsync()
@@ -125,12 +95,9 @@ else
 
         hubConnection.On<string>("NoteMessage", async notemsg => 
         {
-            //Console.WriteLine(user);
-            //Console.WriteLine(notemsg);
-            //await GetPersons();
             if(notemsg=="Update")
             {
-                await GetPersons();
+                await OnInitializedAsync();
             }
             await InvokeAsync(StateHasChanged);
         });
@@ -139,30 +106,9 @@ else
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         var requestUrl = $"{serviceRequest}/GetPersons";
         dateSource = await httpClient.GetFromJsonAsync<Person[]>(requestUrl);
-        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
-        date = new List<Person>(dateSource);
-        await GetPersons();
-
     }
 
-    private async Task GetPersons()
-    {        
-        if (string.IsNullOrEmpty(searchString))
-        {   
-            persons = date.Skip((currentPage - 1) * pageSize).Take(pageSize).ToArray();
-        }
-        else
-        {
-            date = date.Where(p => p.FirstName.Contains(searchString)).ToList();
-            totalPages = date.Count() % pageSize == 0 ? date.Count() / pageSize : date.Count() / pageSize + 1;
-            persons = date.Skip((currentPage - 1) * pageSize).Take(pageSize).ToArray();
-        }
-    }
-    private async Task Filter()
-    {
-        currentPage = 1;
-        await OnInitializedAsync();
-    }
+    private IQueryable<Person> PersonsFilter => dateSource.OrderByDescending(p => p.Id).Where(m => m.FirstName.Contains(searchString)).AsQueryable();
 
     private async Task AddPerson()
     {
@@ -175,7 +121,6 @@ else
             newItemNumber = string.Empty;
             newItemFirstName = string.Empty;
             StateHasChanged();
-            await OnInitializedAsync();
             editRowStyle = "none";
         }
     }
@@ -184,57 +129,38 @@ else
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        if(persons is not null )
+        if (dateSource is not null)
         {
-            person = persons.Single(i => i.Id == id);
+            person = dateSource.Single(i => i.Id == id);
+            addRowStyle = "none";
             editRowStyle = "table-row";
         }
     }
     private async Task SaveItem()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();        
-        if(person is not null)
+        if (dateSource is not null)
         {
             await httpClient.PutAsJsonAsync($"{serviceRequest}/EditPerson?id={person.Id}", person);
         }
-        await GetPersons();
         StateHasChanged();
         editRowStyle = "none";
+        addRowStyle = "table-row";
     }
     private async Task CancelChange()
     {
-        await GetPersons();
         editRowStyle = "none";
+        addRowStyle = "table-row";
     }
     private async Task DeletePerson(long id)
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         await httpClient.DeleteAsync($"{serviceRequest}/DeletePerson?id="+ Convert.ToInt32(id));
-        await OnInitializedAsync();
         StateHasChanged();
         editRowStyle = "none";
     }
-    private async void GoToFirstPage()
-    {
-        currentPage = 1;
-        await GetPersons();
-    }
-    private async void GoToNextPage()
-    {        
-        currentPage++;
-        await GetPersons();
-    }
-    private async void GoToPreviousPage()
-    {
-        currentPage--;
-        await GetPersons();
-    }
-    private async void GoToLastPage()
-    {
-        currentPage = totalPages;
-        await GetPersons();
-    }
+    
     public class Person
     {
         public long Id { get; set; }
