@@ -1,16 +1,14 @@
-﻿using ClassLibrary.Data;
+﻿using DateClassLibrary.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClassLibrary.Settings
 {
+    /// <summary>
+    /// 种子数据；初始化Person和Department信息。
+    /// </summary>
     public static class SeedDate
     {
-        /// <summary>
-        /// 参阅：https://learn.microsoft.com/zh-cn/ef/core/modeling/data-seeding
-        /// </summary>
-        /// <param name="serviceProvider"></param>
-        /// <exception cref="ArgumentNullException"></exception>
         public static void Initialize(IServiceProvider serviceProvider)
         {
             using (var dbContext = new EFCoreDBContext(
@@ -71,6 +69,72 @@ namespace ClassLibrary.Settings
                         FirstName = "Gregory"
                     }
                     );
+                dbContext.SaveChanges();
+            }
+        }
+        public static void InitializeDep(IServiceProvider serviceProvider)
+        {
+            using (var dbContext = new EFCoreDBContext(
+                serviceProvider.GetRequiredService<DbContextOptions<EFCoreDBContext>>()))
+            {
+                if (dbContext == null)
+                {
+                    throw new ArgumentNullException("Null dbContext");
+                }
+                if (dbContext.Departments.Any())
+                {
+                    return;
+                }
+                dbContext.Departments.AddRange(
+                    new Department
+                    {
+                        Name = "D1"
+                    },
+                    new Department
+                    {
+                        Name = "D2"
+                    },
+                    new Department
+                    {
+                        Name = "D3"
+                    });
+                dbContext.SaveChanges();
+            }
+        }
+        public static void InitializeDepPerson(IServiceProvider serviceProvider)
+        {
+            using (var dbContext = new EFCoreDBContext(
+                serviceProvider.GetRequiredService<DbContextOptions<EFCoreDBContext>>()))
+            {
+                if (dbContext == null)
+                {
+                    throw new ArgumentNullException("Null dbContext");
+                }
+                if (dbContext.DepPersons.Any())
+                {
+                    return;
+                }
+                dbContext.DepPersons.AddRange(
+                    new DepPerson
+                    {
+                        DepartmentId = 1,
+                        PersonId = 1
+                    },
+                    new DepPerson
+                    {
+                        DepartmentId = 2,
+                        PersonId = 1
+                    },
+                    new DepPerson
+                    {
+                        DepartmentId = 3,
+                        PersonId = 1
+                    },
+                    new DepPerson
+                    {
+                        DepartmentId = 2,
+                        PersonId = 2
+                    });
                 dbContext.SaveChanges();
             }
         }

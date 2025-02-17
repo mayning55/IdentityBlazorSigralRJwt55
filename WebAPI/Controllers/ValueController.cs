@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
     /// <summary>
-    /// 验证用户角色权限
+    /// 测试，验证用户角色权限
     /// </summary>
     [Route("[controller]/[action]")]
     [ApiController]

@@ -1,7 +1,6 @@
 ﻿using LoginClassLibrary;
 using LoginClassLibrary.Account;
 using LoginClassLibrary.Login;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers

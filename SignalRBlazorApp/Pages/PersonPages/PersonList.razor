@@ -1,0 +1,280 @@
+﻿@page "/Persons"
+@inject NavigationManager NavigationManager
+
+@if (persons == null)
+{
+    <p>None!</p>
+}
+else
+{
+    <tr id="addRow" style="display:@addRowStyle">
+        <td></td>
+        <td>
+            <input @bind="newNumber" placeholder="New Number" />
+        </td>
+        <td>
+            <input @bind="newFirstName" placeholder="New FirstName" />
+        </td>
+        <td class="text-center">
+            <button class="btn btn-success" @onclick="AddPerson">Add</button>
+        </td>
+        <td>
+            <input @bind="searchString" />
+            <button class="btn btn-success" @onclick="Search">Search</button>
+        </td>
+
+    </tr>
+    <tr id="editRow" style="display:@editRowStyle">
+    <tr>
+        <td class="text-center">
+            <input @bind="person.Number" />
+        </td>
+        <td class="text-center">
+            <input @bind="person.FirstName" />
+        </td>
+        <td class="text-center">
+            <button class="btn btn-success" @onclick="SaveItem">
+                Save
+            </button>
+            <button class="btn btn-danger" @onclick="CancelChange">
+                Cancel
+            </button>
+        </td>
+    </tr>
+
+    <tr>
+        <a>Departments</a>
+        <SelectComponent deps="depSelects" SelectedValues="SelectId" />
+    </tr>
+    </tr>
+    <tr id="confirmDelSpan" style="display:@delConfirmStyle">
+        <td class="text-center">Are you sure want to delete @person.FirstName</td>
+        <td>
+            <button class="btn btn-warning" @onclick="DeleteItem">
+                Yes
+            </button>
+            <button class="btn btn-warning" @onclick="CancelChange">
+                No
+            </button>
+        </td>
+    </tr>
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="text-center">
+                    <label>ID</label>
+                </th>
+                <th class="text-center">
+                    <label>Number</label>
+                </th>
+                <th class="text-center">
+                    <label>FirstName</label>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in persons)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Number</td>
+                    <td>@item.FirstName</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning" @onclick="@(() => EditPerson(item.Id))">
+                            Edit
+                        </button>
+                        <button class="btn btn-warning" @onclick="@(() => DeleteConfirm(item.Id, true))">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <Paginat totalPages="totalPages" currentPage="currentPage" CurrentPageValueChanged="CurrentPageValue"
+        PageSizeChanged="PageSizeChanged" />
+
+}
+
+
+@code {
+    private IEnumerable<Person>? dateSource { get; set; }
+    private List<Person> persons = new();
+    private IEnumerable<DepSelect>? depSource { get; set; }
+    private List<DepSelect> depSelects = new();
+    public List<long> SelectId = new();
+    private Person person = new();
+    private string editRowStyle = "none";
+    private string? addRowStyle;
+    private string delConfirmStyle = "none";
+    private string? newNumber;
+    private string? newFirstName;
+    private string? serviceRequest;
+    private string? searchString { get; set; }
+    private int currentPage { get; set; } = 1;
+    private int pageSize { get; set; } = 5;
+    private int totalPages { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
+        HubConnection hubConnection = new HubConnectionBuilder()
+        //.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+        .WithUrl("https://localhost:7286/chathub", options =>
+        {
+            options.AccessTokenProvider = async () =>
+    {
+            string token = await localStorageService.GetItemAsStringAsync("auth")!;
+            var deserializeToken = Serializations.DeserializeJsonString<UserSession>(token);
+            return deserializeToken.Token;
+        };
+        })
+        .Build();
+        ////持有者令牌身份验证，参阅：https://learn.microsoft.com/zh-cn/aspnet/core/security/cors?view=aspnetcore-8.0
+        serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Person";
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var requestUrl = $"{serviceRequest}/GetPersons";
+        dateSource = await httpClient.GetFromJsonAsync<Person[]>(requestUrl);
+        depSource = await httpClient.GetFromJsonAsync<DepSelect[]>($"{serviceRequest}/GetDepSelect?id=0");
+        depSelects = depSource.ToList();
+        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
+
+        hubConnection.On<string>("NoteMessage", async notemsg =>
+        {
+            if (notemsg == "Update")
+            {
+                dateSource = await httpClient.GetFromJsonAsync<Person[]>(requestUrl);
+                await GetPersons();
+            }
+            await InvokeAsync(StateHasChanged);
+        });
+        await hubConnection.StartAsync();
+
+        await GetPersons();
+    }
+    private async Task GetPersons()
+    {
+
+        if (string.IsNullOrEmpty(searchString))
+        {
+            persons = dateSource.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        }
+        else
+        {
+            dateSource = dateSource.Where(p => p.FirstName.Contains(searchString)).ToList();
+            totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
+            persons = dateSource.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        }
+    }
+    private async Task Search()
+    {
+        currentPage = 1;
+        await OnInitializedAsync();
+    }
+    private async Task AddPerson()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        if (!string.IsNullOrEmpty(newNumber) && !string.IsNullOrEmpty(newFirstName))
+        {
+            var addPerson = new Person { Number = newNumber, FirstName = newFirstName };
+            await httpClient.PostAsJsonAsync($"{serviceRequest}/AddPerson", addPerson);
+            newNumber = string.Empty;
+            newFirstName = string.Empty;
+            currentPage = totalPages;
+            await OnInitializedAsync();
+            editRowStyle = "none";
+        }
+    }
+    private async Task EditPerson(long id)
+    {
+        if (persons is not null)
+        {
+            depSelects.Clear();
+            SelectId.Clear();
+            serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Person";
+            var httpClient = await getHttpClient.GetPrivateHttpClient();
+            depSource = await httpClient.GetFromJsonAsync<DepSelect[]>($"{serviceRequest}/GetDepSelect?id={id}");
+            depSelects = depSource.ToList();
+            foreach (var dep in depSource.Where(d => d.IsSelect == true))
+            {
+                SelectId.Add(dep.Id);
+            }
+            person = persons.Single(i => i.Id == id);
+            addRowStyle = "none";
+            delConfirmStyle = "none";
+            editRowStyle = "table-row";
+        }
+    }
+    private async Task SaveItem()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        if (person is not null)
+        {
+            await httpClient.PutAsJsonAsync($"{serviceRequest}/EditPerson?id={person.Id}", person);
+            await httpClient.PutAsJsonAsync($"{serviceRequest}/UpdateDepSelect?id={person.Id}", SelectId);
+        }
+        depSelects.Clear();
+        SelectId.Clear();
+        await GetPersons();
+        editRowStyle = "none";
+        addRowStyle = "table-row";
+    }
+    private async Task CancelChange()
+    {
+        depSelects.Clear();
+        SelectId.Clear();
+        editRowStyle = "none";
+        delConfirmStyle = "none";
+        addRowStyle = "table-row";
+    }
+    private async Task DeleteConfirm(long id, bool isDelete)
+    {
+        if (isDelete)
+        {
+            person = persons.Single(i => i.Id == id);
+            addRowStyle = "none";
+            editRowStyle = "none";
+            delConfirmStyle = "inline";
+        }
+        else
+        {
+            delConfirmStyle = "none";
+            addRowStyle = "table-row";
+        }
+    }
+    private async Task DeleteItem()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        if (person is not null)
+        {
+            await httpClient.DeleteAsync($"{serviceRequest}/DeletePerson?id=" + Convert.ToInt32(person.Id));
+        }
+        await OnInitializedAsync();
+        delConfirmStyle = "none";
+        addRowStyle = "table-row";
+    }
+    private async void CurrentPageValue(int newPage)
+    {
+        currentPage = newPage;
+        await GetPersons();
+    }
+    private async void PageSizeChanged(int newPageSize)
+    {
+        pageSize = newPageSize;
+        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
+        currentPage = 1;
+        await GetPersons();
+    }
+    public class Person
+    {
+        public long Id { get; set; }
+        public string Number { get; set; }
+        public string FirstName { get; set; }
+
+    }
+}

@@ -1,6 +1,5 @@
-﻿using ClassLibrary.Data;
+﻿using DateClassLibrary.Data;
 using ClassLibrary.Settings;
-using LoginClassLibrary.Login;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +11,19 @@ using System.Text;
 namespace ClassLibrary.Services
 {
     /// <summary>
-    /// 通过ConfigureServices 方法配置各服务，包含：数据库连接，Jwt，Identity和用户登录校验服务。
+    /// 通过ConfigureServices 容器方法配置各服务，包含：数据库连接，Jwt，Identity用户登录。
     /// </summary>
     public static class ServiceContainer
     {
         public static IServiceCollection DIServices(this IServiceCollection services,
             IConfiguration configuration)
         {
+            //db连接
             services.AddDbContext<EFCoreDBContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SQLServerConnection"),
                 b => b.MigrationsAssembly(typeof(ServiceContainer).Assembly.FullName)),
                     ServiceLifetime.Scoped);
+            //jwt验证配置
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -35,13 +36,14 @@ namespace ClassLibrary.Services
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromSeconds(0),//时钟偏移，过期时间是偏移时间+有效时间
+                    ClockSkew = TimeSpan.FromSeconds(0),//时钟偏移，过期时间=偏移时间+有效时间
                     ValidIssuer = configuration["JWT:Issuer"],
                     ValidAudience = configuration["JWT:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey
                     (Encoding.UTF8.GetBytes(configuration["JWT:SigningKey"]!))
                 };
             });
+            //Identity配置
             IdentityBuilder identityBuilder = new IdentityBuilder(typeof(UserExtend), typeof(IdentityRole), services);
             identityBuilder.AddEntityFrameworkStores<EFCoreDBContext>()
                     .AddDefaultTokenProviders()

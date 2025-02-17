@@ -7,9 +7,9 @@ using System.Net.Http.Json;
 namespace SignalRBlazorApp
 {
     /// <summary>
-    /// 用户登录验证和刷新Token
+    /// 用户登录验证的处理逻辑，即如何实现IUser接口的动作
     /// </summary>
-    /// <param name="getHttpClient"></param>
+    /// <param name="getHttpClient"></param> ：重构后的HttpClient
     public class AccountAuth(GetHttpClient getHttpClient) : IUser
     {
         public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)

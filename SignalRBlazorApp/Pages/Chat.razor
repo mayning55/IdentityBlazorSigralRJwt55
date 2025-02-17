@@ -50,6 +50,11 @@ User: @context.User.Identity?.Name
 
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
         hubConnection = new HubConnectionBuilder()
         //.WithUrl(Navigation.ToAbsoluteUri("/chathub"))
         .WithUrl("https://localhost:7286/chathub", options =>

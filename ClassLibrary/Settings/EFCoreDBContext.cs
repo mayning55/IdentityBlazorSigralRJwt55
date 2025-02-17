@@ -1,11 +1,6 @@
-﻿using ClassLibrary.Data;
+﻿using DateClassLibrary.Data;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClassLibrary.Settings
 {
@@ -22,5 +17,7 @@ namespace ClassLibrary.Settings
 
         public DbSet<Person> Persons { get; set; }
         public DbSet<RefreshTokenInfo> RefreshTokenInfos { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<DepPerson> DepPersons { get; set; }
     }
 }

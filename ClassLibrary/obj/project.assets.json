@@ -1540,6 +1540,20 @@
           }
         }
       },
+      "DateClassLibrary/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "LoginClassLibrary": "1.0.0",
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.10"
+        },
+        "compile": {
+          "bin/placeholder/DateClassLibrary.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/DateClassLibrary.dll": {}
+        }
+      },
       "LoginClassLibrary/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -3933,6 +3947,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "DateClassLibrary/1.0.0": {
+      "type": "project",
+      "path": "../DateClassLibrary/DateClassLibrary.csproj",
+      "msbuildProject": "../DateClassLibrary/DateClassLibrary.csproj"
+    },
     "LoginClassLibrary/1.0.0": {
       "type": "project",
       "path": "../LoginClassLibrary/LoginClassLibrary.csproj",
@@ -3941,6 +3960,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "DateClassLibrary >= 1.0.0",
       "LoginClassLibrary >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.10",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 8.0.10",
@@ -3950,39 +3970,35 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\hdus\\.nuget\\packages\\": {},
-    "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/mayning/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj",
+      "projectUniqueName": "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/ClassLibrary/ClassLibrary.csproj",
       "projectName": "ClassLibrary",
-      "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\ClassLibrary.csproj",
-      "packagesPath": "C:\\Users\\hdus\\.nuget\\packages\\",
-      "outputPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\ClassLibrary\\obj\\",
+      "projectPath": "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/ClassLibrary/ClassLibrary.csproj",
+      "packagesPath": "/Users/mayning/.nuget/packages/",
+      "outputPath": "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/ClassLibrary/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\hdus\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/mayning/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj": {
-              "projectPath": "D:\\VBS\\git\\mayning55\\IdentityBlazorSigralRJwt55\\LoginClassLibrary\\LoginClassLibrary.csproj"
+            "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/DateClassLibrary/DateClassLibrary.csproj": {
+              "projectPath": "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/DateClassLibrary/DateClassLibrary.csproj"
+            },
+            "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/LoginClassLibrary/LoginClassLibrary.csproj": {
+              "projectPath": "/Users/mayning/Documents/git/IdentityBlazorSigralRJwt55/LoginClassLibrary/LoginClassLibrary.csproj"
             }
           }
         }
@@ -3995,9 +4011,8 @@
       "restoreAuditProperties": {
         "enableAudit": "true",
         "auditLevel": "low",
-        "auditMode": "all"
-      },
-      "SdkAnalysisLevel": "9.0.100"
+        "auditMode": "direct"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -4042,7 +4057,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.402/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

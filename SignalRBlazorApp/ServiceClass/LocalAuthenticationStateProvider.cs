@@ -1,23 +1,21 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
-using SignalRBlazorApp.Services;
 using LoginClassLibrary.Account;
 
 namespace SignalRBlazorApp.Services
 {
     /// <summary>
-    /// 用户登录状态，访问需要授权的页面时带上保存在本地的Token。
+    /// 用户当前的状态验证
     /// </summary>
-    public class LocalAuthenticationStateProvider(ILocalStorageService localStorageService) : AuthenticationStateProvider
+    public class LocalAuthenticationStateProvider(LocalStorageService localStorageService) : AuthenticationStateProvider
     {
         private const string LocalStorageKey = "auth";
         private readonly ClaimsPrincipal anonymous = new(new ClaimsPrincipal());//未登录
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var token = await localStorageService.GetItemAsStringAsync(LocalStorageKey);
+            var token = await localStorageService.GetToken();
             if (string.IsNullOrEmpty(token))
             {
                 return await Task.FromResult(new AuthenticationState(anonymous));
@@ -75,13 +73,13 @@ namespace SignalRBlazorApp.Services
             if (userSession.Token != null || userSession.RefreshToken != null)
             {
                 var serializeSession = Serializations.SerializeOjb(userSession);
-                await localStorageService.SetItemAsStringAsync(LocalStorageKey,serializeSession);
+                await localStorageService.SetToken(serializeSession);
                 var getUserClaims = GetClaims(userSession.Token!);
                 claimPrincipal = SetClaimPrincipal(getUserClaims);
             }
             else
             {
-                await localStorageService.RemoveItemAsync(LocalStorageKey);
+                await localStorageService.RemoveToken();
             }
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimPrincipal)));
 

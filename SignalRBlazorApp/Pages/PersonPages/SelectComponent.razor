@@ -1,0 +1,43 @@
+﻿@page "/SelectComponent"
+
+
+<div>
+    @if (deps != null)
+    {
+        foreach (var item in deps)
+        {
+            <td>
+                <input type="checkbox" checked=@item.IsSelect
+                    @onchange="eventArgs => { CheckboxClicked(item.Id, eventArgs.Value); }" />
+                @item.DepartmentName <br />
+            </td>
+        }
+    }
+</div>
+
+@code {
+    //选择组件，返回选择后的部门Id。提交保存。
+    [Parameter]
+    public List<DepSelect> deps { get; set; }
+    [Parameter]
+    public List<long> SelectedValues { get; set; }
+
+    public void CheckboxClicked(long selectId, object isChecked)
+    {
+        if ((bool)isChecked)
+        {
+            if (!SelectedValues.Contains(selectId))
+            {
+                SelectedValues.Add(selectId);
+            }
+        }
+        else
+        {
+            if (SelectedValues.Contains(selectId))
+            {
+                SelectedValues.Remove(selectId);
+            }
+        }
+        StateHasChanged();
+    }
+}

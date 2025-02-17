@@ -44,6 +44,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
         await CheckUserAuthentication();
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("https://localhost:7286/WeatherForecast");

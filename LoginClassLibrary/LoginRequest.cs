@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+
 
 namespace LoginClassLibrary
 {
+    /// <summary>
+    /// 用户登录提交的请求字段。
+    /// </summary>
     public class LoginRequest
     {
         [Required]

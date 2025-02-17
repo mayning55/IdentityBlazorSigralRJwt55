@@ -3,7 +3,7 @@
 namespace LoginClassLibrary.Account
 {
     /// <summary>
-    /// Json序列化，参阅：https://learn.microsoft.com/zh-cn/dotnet/standard/serialization/system-text-json/how-to
+    /// 对象序列化和反序列化
     /// </summary>
     public class Serializations
     {

@@ -1,0 +1,31 @@
+﻿@page "/DepPersons"
+@using DateClassLibrary.Data
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@if (persons == null)
+{
+    <p>None!!!</p>
+}
+else
+{
+    <p> --Item Details--</p>
+    <p>
+        <input type="search" @bind="search" @bind:event="oninput" />
+    </p>
+    <QuickGrid Items="personfilter" Pagination="pagination">
+        <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Number)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" Title="Name" />
+    </QuickGrid>
+    <Paginator State="pagination" />
+}
+
+@code {
+    //明细组件，QuickGird
+    PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
+    [Parameter]
+    public List<Person> persons { get; set; }
+    private string search = string.Empty;
+    private IQueryable<Person> personfilter => persons.Where(p => p.FirstName.Contains(search)).AsQueryable();
+
+}

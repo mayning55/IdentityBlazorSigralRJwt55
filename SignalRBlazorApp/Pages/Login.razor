@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@layout LoginComponent
 @using LoginClassLibrary
 @using SignalRBlazorApp.Services
 
@@ -6,7 +7,6 @@
 <div class="alert alert-info" mb-3>@Message</div>
 <EditForm Model="login" OnValidSubmit="LoginAsync">
     <DataAnnotationsValidator />
-    <h2>Use a account to log in.</h2>
     <hr />
     <ValidationSummary class="text-danger" role="alert" />
     <div class="form-floating mb-3">

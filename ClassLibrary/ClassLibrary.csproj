@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DateClassLibrary\DateClassLibrary.csproj" />
     <ProjectReference Include="..\LoginClassLibrary\LoginClassLibrary.csproj" />
   </ItemGroup>
 

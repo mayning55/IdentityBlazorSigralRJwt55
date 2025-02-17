@@ -1,0 +1,64 @@
+﻿@page "/Paginat"
+<div>
+    <button disabled="@firstPage" @onclick="FirstPage">First</button>
+    <button disabled="@firstPage" @onclick="PreviousPage">Previous</button>
+    <span>Page @currentPage of @totalPages</span>
+    <button disabled="@lastPage" @onclick="NextPage">Next</button>
+    <button disabled="@lastPage" @onclick="LastPage">Last</button>
+    <input @bind="pageSize" @bind:event="oninput" @bind:after="Pschanged" />
+</div>
+@code {
+    //分页组件的一种实现方式，skip().take().也直接使用QuickGird组件。
+    [Parameter]
+    public int currentPage { get; set; }
+    [Parameter]
+    public int pageSize { get; set; } = 5;
+    [Parameter]
+    public int totalPages { get; set; }
+    private bool firstPage => currentPage == 1;
+    private bool lastPage => currentPage == totalPages;
+    [Parameter]
+    public EventCallback<int> CurrentPageValueChanged { get; set; }
+    [Parameter]
+    public EventCallback<int> PageSizeChanged { get; set; }
+
+    public async void Pschanged()
+    {
+        if (PageSizeChanged.HasDelegate)
+        {
+            await PageSizeChanged.InvokeAsync(pageSize);
+        }
+    }
+    public async void FirstPage()
+    {
+        currentPage = 1;
+        if (CurrentPageValueChanged.HasDelegate)
+        {
+            await CurrentPageValueChanged.InvokeAsync(currentPage);
+        }
+    }
+    public async void NextPage()
+    {
+        currentPage++;
+        if (CurrentPageValueChanged.HasDelegate)
+        {
+            await CurrentPageValueChanged.InvokeAsync(currentPage);
+        }
+    }
+    public async void PreviousPage()
+    {
+        currentPage--;
+        if (CurrentPageValueChanged.HasDelegate)
+        {
+            await CurrentPageValueChanged.InvokeAsync(currentPage);
+        }
+    }
+    public async void LastPage()
+    {
+        currentPage = totalPages;
+        if (CurrentPageValueChanged.HasDelegate)
+        {
+            await CurrentPageValueChanged.InvokeAsync(currentPage);
+        }
+    }
+}

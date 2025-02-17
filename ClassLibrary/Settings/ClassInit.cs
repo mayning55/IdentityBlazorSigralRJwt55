@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace ClassLibrary.Settings
 {
@@ -23,7 +19,6 @@ namespace ClassLibrary.Settings
             this.iServiceScope.Dispose();//释放非托管资源 
             base.Dispose();
         }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var addClassServer = iServiceScope.ServiceProvider.GetRequiredService<InitAdmin>();

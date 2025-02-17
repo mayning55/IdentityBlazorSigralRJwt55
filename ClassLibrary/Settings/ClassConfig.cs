@@ -1,11 +1,6 @@
-﻿using ClassLibrary.Data;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DateClassLibrary.Data;
 
 namespace ClassLibrary.Settings
 {
@@ -19,6 +14,16 @@ namespace ClassLibrary.Settings
             public void Configure(EntityTypeBuilder<Person> builder)
             {
                 builder.ToTable("Persons");
+                builder.Property(p => p.Number).IsRequired();
+                builder.Property(p=>p.FirstName).IsRequired();
+            }
+        }
+        public class DepartmentConfig : IEntityTypeConfiguration<Department>
+        {
+            public void Configure(EntityTypeBuilder<Department> builder)
+            {
+                builder.ToTable("Departments");
+                builder.Property(d=>d.Name).IsRequired();
             }
         }
     }
