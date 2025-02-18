@@ -1,22 +1,22 @@
 ﻿@page "/Paginat"
 <div>
-    <button disabled="@firstPage" @onclick="FirstPage">First</button>
-    <button disabled="@firstPage" @onclick="PreviousPage">Previous</button>
-    <span>Page @currentPage of @totalPages</span>
-    <button disabled="@lastPage" @onclick="NextPage">Next</button>
-    <button disabled="@lastPage" @onclick="LastPage">Last</button>
-    <input @bind="pageSize" @bind:event="oninput" @bind:after="Pschanged" />
+    <button disabled="@IsFirstPage" @onclick="FirstPage">First</button>
+    <button disabled="@IsFirstPage" @onclick="PreviousPage">Previous</button>
+    <span>Page @CurrentPage of @TotalPages</span>
+    <button disabled="@IsLastPage" @onclick="NextPage">Next</button>
+    <button disabled="@IsLastPage" @onclick="LastPage">Last</button>
+    <input @bind="PageSize" @bind:event="oninput" @bind:after="Pschanged" />
 </div>
 @code {
     //分页组件的一种实现方式，skip().take().也直接使用QuickGird组件。
     [Parameter]
-    public int currentPage { get; set; }
+    public int CurrentPage { get; set; }
     [Parameter]
-    public int pageSize { get; set; } = 5;
+    public int PageSize { get; set; } = 5;
     [Parameter]
-    public int totalPages { get; set; }
-    private bool firstPage => currentPage == 1;
-    private bool lastPage => currentPage == totalPages;
+    public int TotalPages { get; set; }
+    private bool IsFirstPage => CurrentPage == 1;
+    private bool IsLastPage => CurrentPage == TotalPages;
     [Parameter]
     public EventCallback<int> CurrentPageValueChanged { get; set; }
     [Parameter]
@@ -26,39 +26,39 @@
     {
         if (PageSizeChanged.HasDelegate)
         {
-            await PageSizeChanged.InvokeAsync(pageSize);
+            await PageSizeChanged.InvokeAsync(PageSize);
         }
     }
     public async void FirstPage()
     {
-        currentPage = 1;
+        CurrentPage = 1;
         if (CurrentPageValueChanged.HasDelegate)
         {
-            await CurrentPageValueChanged.InvokeAsync(currentPage);
+            await CurrentPageValueChanged.InvokeAsync(CurrentPage);
         }
     }
     public async void NextPage()
     {
-        currentPage++;
+        CurrentPage++;
         if (CurrentPageValueChanged.HasDelegate)
         {
-            await CurrentPageValueChanged.InvokeAsync(currentPage);
+            await CurrentPageValueChanged.InvokeAsync(CurrentPage);
         }
     }
     public async void PreviousPage()
     {
-        currentPage--;
+        CurrentPage--;
         if (CurrentPageValueChanged.HasDelegate)
         {
-            await CurrentPageValueChanged.InvokeAsync(currentPage);
+            await CurrentPageValueChanged.InvokeAsync(CurrentPage);
         }
     }
     public async void LastPage()
     {
-        currentPage = totalPages;
+        CurrentPage = TotalPages;
         if (CurrentPageValueChanged.HasDelegate)
         {
-            await CurrentPageValueChanged.InvokeAsync(currentPage);
+            await CurrentPageValueChanged.InvokeAsync(CurrentPage);
         }
     }
 }

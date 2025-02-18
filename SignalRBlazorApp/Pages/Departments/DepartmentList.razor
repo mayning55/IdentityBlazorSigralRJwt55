@@ -6,27 +6,27 @@
 @inject ILocalStorageService localStorageService
 @inject NavigationManager NavigationManager
 
-@if (departments == null)
+@if (Departments == null)
 {
     <p>None!</p>
 }
 else
 {
-    <tr id="addRow" style="display:@addRowStyle">
+    <tr id="addRow" style="display:@AddRowStyle">
         <td></td>
         <td>
-            <input @bind="newDepName" placeholder="New DepartmentName" />
+            <input @bind="NewDepName" placeholder="New DepartmentName" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="AddDepartment">Add</button>
+            <button class="btn btn-success" @onclick="AddItem">Add</button>
         </td>
         <td>
-            <input @bind="searchString" />
+            <input @bind="SearchString" />
             <button class="btn btn-success" @onclick="Search">Search</button>
         </td>
 
     </tr>
-    <tr id="editRow" style="display:@editRowStyle">
+    <tr id="editRow" style="display:@EditRowStyle">
         <td class="text-center">
             <input @bind="department.Name" />
         </td>
@@ -39,16 +39,8 @@ else
             </button>
         </td>
     </tr>
-    <tr id="confirmDelSpan" style="display:@delConfirmStyle">
-        <td class="text-center">Are you sure want to delete @department.Name</td>
-        <td>
-            <button class="btn btn-warning" @onclick="DeleteItem">
-                Yes
-            </button>
-            <button class="btn btn-warning" @onclick="CancelChange">
-                No
-            </button>
-        </td>
+    <tr id="confirmDelSpan" style="display:@DelConfirmStyle">
+        <DeleteConfirm ItemName="@department.Name" OnCancelChange="CancelChange" OnDeleteItem="DeleteItem"/>
     </tr>
     <table class="table">
         <thead>
@@ -62,7 +54,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in departments)
+            @foreach (var item in Departments)
             {
                 <tr>
                     <td>@item.Id</td>
@@ -74,7 +66,7 @@ else
                         <button class="btn btn-warning" @onclick="@(() => EditDepartment(item.Id))">
                             Edit
                         </button>
-                        <button class="btn btn-warning" @onclick="@(() => DeleteConfirm(item.Id, true))">
+                        <button class="btn btn-warning" @onclick="@(() => DeleteConfirm(item.Id))">
                             Delete
                         </button>
                     </td>
@@ -82,30 +74,30 @@ else
             }
         </tbody>
     </table>
-    <Paginat totalPages="totalPages" currentPage="currentPage" CurrentPageValueChanged="CurrentPageValue"
+    <Paginat TotalPages="TotalPages" CurrentPage="CurrentPage" CurrentPageValueChanged="CurrentPageValue"
         PageSizeChanged="PageSizeChanged" />
-    <tr id="depDetail" style="display:@showDepDetail">
-        <DepPersons persons="persons" />
+    <tr id="depDetail" style="display:@ShowDepDetail">
+        <DepPersons Persons="Persons" />
     </tr>
 
 }
 
 @code {
-    private string? serviceRequest;
-    private string? searchString { get; set; }
-    private int currentPage { get; set; } = 1;
-    private int pageSize { get; set; } = 5;
-    private int totalPages { get; set; }
-    private long departmentID { get; set; }
-    private IEnumerable<Department>? dateSource { get; set; }
-    private List<Department> departments = new();
-    private List<Person> persons = new();
+    private string? ServiceRequest;
+    private string? SearchString { get; set; }
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    private int TotalPages { get; set; }
+    private long TepartmentID { get; set; }
+    private IEnumerable<Department>? DateSource { get; set; }
+    private List<Department> Departments = new();
+    private List<Person> Persons = new();
     private Department department = new();
-    private string? newDepName;
-    private string editRowStyle = "none";
-    private string? addRowStyle;
-    private string delConfirmStyle = "none";
-    private string showDepDetail = "none";
+    private string? NewDepName;
+    private string EditRowStyle = "none";
+    private string? AddRowStyle;
+    private string DelConfirmStyle = "none";
+    private string ShowDepDetail = "none";
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
@@ -127,17 +119,17 @@ else
         .Build();
         ////持有者令牌身份验证，参阅：https://learn.microsoft.com/zh-cn/aspnet/core/security/cors?view=aspnetcore-8.0
 
-        serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Deparment";
+        ServiceRequest = $"{Config.GetValue<string>("BackendUrl")}/Deparment";
         var httpClient = await getHttpClient.GetPrivateHttpClient();
-        var requestUrl = $"{serviceRequest}/GetAll";
-        dateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
-        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
+        var requestUrl = $"{ServiceRequest}/GetAll";
+        DateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
 
         hubConnection.On<string>("DepMessage", async notemsg =>
         {
             if (notemsg == "Update")
             {
-                dateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
+                DateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
                 await GetDepartments();
             }
             await InvokeAsync(StateHasChanged);
@@ -148,38 +140,38 @@ else
     }
     private async Task GetDepartments()
     {
-        if (string.IsNullOrEmpty(searchString))
+        if (string.IsNullOrEmpty(SearchString))
         {
-            departments = dateSource.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+            Departments = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
         }
         else
         {
-            dateSource = dateSource.Where(p => p.Name.Contains(searchString)).ToList();
-            totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
-            departments = dateSource.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+            DateSource = DateSource.Where(p => p.Name.Contains(SearchString)).ToList();
+            TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+            Departments = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
         }
     }
     private async Task EditDepartment(long id)
     {
-        if (departments is not null)
+        if (Departments is not null)
         {
-            department = departments.Single(i => i.Id == id);
-            addRowStyle = "none";
-            delConfirmStyle = "none";
-            editRowStyle = "table-row";
+            department = Departments.Single(i => i.Id == id);
+            AddRowStyle = "none";
+            DelConfirmStyle = "none";
+            EditRowStyle = "table-row";
         }
     }
-    private async Task AddDepartment()
+    private async Task AddItem()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
-        if (!string.IsNullOrEmpty(newDepName))
+        if (!string.IsNullOrEmpty(NewDepName))
         {
-            var addDep = new Department { Name = newDepName };
-            await httpClient.PostAsJsonAsync($"{serviceRequest}/AddItem", addDep);
-            newDepName = string.Empty;
-            currentPage = totalPages;
+            var addDep = new Department { Name = NewDepName };
+            await httpClient.PostAsJsonAsync($"{ServiceRequest}/AddItem", addDep);
+            NewDepName = string.Empty;
+            CurrentPage = TotalPages;
             await OnInitializedAsync();
-            editRowStyle = "none";
+            EditRowStyle = "none";
         }
     }
     private async Task Search()
@@ -191,71 +183,64 @@ else
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (department is not null)
         {
-            await httpClient.PutAsJsonAsync($"{serviceRequest}/EditItem?id={department.Id}", department);
+            await httpClient.PutAsJsonAsync($"{ServiceRequest}/EditItem?id={department.Id}", department);
         }
         await GetDepartments();
-        editRowStyle = "none";
-        addRowStyle = "table-row";
+        EditRowStyle = "none";
+        AddRowStyle = "table-row";
     }
-    private async Task CancelChange()
+    private async Task CancelChange(MouseEventArgs e)
     {
-        editRowStyle = "none";
-        delConfirmStyle = "none";
-        addRowStyle = "table-row";
+        EditRowStyle = "none";
+        DelConfirmStyle = "none";
+        AddRowStyle = "table-row";
     }
-    private async Task DeleteItem()
+    private async Task DeleteItem(MouseEventArgs e)
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (department is not null)
         {
-            await httpClient.DeleteAsync($"{serviceRequest}/DeleteItem?id=" + Convert.ToInt32(department.Id));
+            await httpClient.DeleteAsync($"{ServiceRequest}/DeleteItem?id=" + Convert.ToInt32(department.Id));
         }
         await OnInitializedAsync();
-        delConfirmStyle = "none";
-        addRowStyle = "table-row";
+        DelConfirmStyle = "none";
+        AddRowStyle = "table-row";
+        ShowDepDetail = "none";
     }
     private async Task ItemDetail(long id)
     {
-        showDepDetail = "inherit";
-        persons = new List<Person>();
-        showDepDetail = "inherit";
+        ShowDepDetail = "inherit";
+        Persons = new List<Person>();
+        ShowDepDetail = "inherit";
         var httpClient = await getHttpClient.GetPrivateHttpClient();
-        department = await httpClient.GetFromJsonAsync<Department>($"{serviceRequest}/GetById?id=" +
+        department = await httpClient.GetFromJsonAsync<Department>($"{ServiceRequest}/GetById?id=" +
         Convert.ToInt32(id));
         {
             foreach (var item in department.DepPersons)
             {
-                persons.Add(item.Person);
+                Persons.Add(item.Person);
             }
         }
     }
     private async Task CurrentPageValue(int newPage)
     {
-        currentPage = newPage;
+        CurrentPage = newPage;
         await GetDepartments();
     }
     private async Task PageSizeChanged(int newPageSize)
     {
-        pageSize = newPageSize;
-        totalPages = dateSource.Count() % pageSize == 0 ? dateSource.Count() / pageSize : dateSource.Count() / pageSize + 1;
-        currentPage = 1;
+        PageSize = newPageSize;
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        CurrentPage = 1;
         await GetDepartments();
     }
 
-    private async Task DeleteConfirm(long id, bool isDelete)
+    private async Task DeleteConfirm(long id)
     {
-        if (isDelete)
-        {
-            department = departments.Single(i => i.Id == id);
-            addRowStyle = "none";
-            editRowStyle = "none";
-            delConfirmStyle = "inline";
-        }
-        else
-        {
-            delConfirmStyle = "none";
-            addRowStyle = "table-row";
-        }
+        department = Departments.Single(i => i.Id == id);
+        AddRowStyle = "none";
+        EditRowStyle = "none";
+        DelConfirmStyle = "inline";
     }
 
 }

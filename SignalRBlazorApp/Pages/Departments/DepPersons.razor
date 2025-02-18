@@ -2,7 +2,7 @@
 @using DateClassLibrary.Data
 @using Microsoft.AspNetCore.Components.QuickGrid
 
-@if (persons == null)
+@if (Persons == null)
 {
     <p>None!!!</p>
 }
@@ -24,8 +24,8 @@ else
     //明细组件，QuickGird
     PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
     [Parameter]
-    public List<Person> persons { get; set; }
+    public List<Person> Persons { get; set; }
     private string search = string.Empty;
-    private IQueryable<Person> personfilter => persons.Where(p => p.FirstName.Contains(search)).AsQueryable();
+    private IQueryable<Person> personfilter => Persons.Where(p => p.FirstName.Contains(search)).AsQueryable();
 
 }

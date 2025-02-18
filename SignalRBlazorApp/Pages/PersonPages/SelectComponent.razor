@@ -2,9 +2,9 @@
 
 
 <div>
-    @if (deps != null)
+    @if (Deps != null)
     {
-        foreach (var item in deps)
+        foreach (var item in Deps)
         {
             <td>
                 <input type="checkbox" checked=@item.IsSelect
@@ -18,24 +18,24 @@
 @code {
     //选择组件，返回选择后的部门Id。提交保存。
     [Parameter]
-    public List<DepSelect> deps { get; set; }
+    public List<DepSelect> Deps { get; set; }
     [Parameter]
-    public List<long> SelectedValues { get; set; }
+    public List<long> SelectedItems { get; set; }
 
     public void CheckboxClicked(long selectId, object isChecked)
     {
         if ((bool)isChecked)
         {
-            if (!SelectedValues.Contains(selectId))
+            if (!SelectedItems.Contains(selectId))
             {
-                SelectedValues.Add(selectId);
+                SelectedItems.Add(selectId);
             }
         }
         else
         {
-            if (SelectedValues.Contains(selectId))
+            if (SelectedItems.Contains(selectId))
             {
-                SelectedValues.Remove(selectId);
+                SelectedItems.Remove(selectId);
             }
         }
         StateHasChanged();

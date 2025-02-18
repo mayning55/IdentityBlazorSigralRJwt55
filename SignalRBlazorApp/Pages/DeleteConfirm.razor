@@ -1,0 +1,33 @@
+﻿@page "/DeleteConfirm"
+
+
+<td class="text-center">Are you sure want to delete @ItemName</td>
+<td>
+    <button class="btn btn-warning" @onclick="DeleteItem">
+        Yes
+    </button>
+    <button class="btn btn-warning" @onclick="CancelChange">
+        No
+    </button>
+</td>
+
+@code {
+    [Parameter]
+    public string ItemName { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnDeleteItem { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnCancelChange { get; set; }
+
+    public async Task DeleteItem(MouseEventArgs e)
+    {
+        await OnDeleteItem.InvokeAsync(e);
+
+    }
+    public async Task CancelChange(MouseEventArgs e)
+    {
+        await OnCancelChange.InvokeAsync(e);
+
+    }
+
+}
