@@ -7,6 +7,7 @@ using LoginClassLibrary.Login;
 using WebAPI.Implementations;
 using DateClassLibrary;
 using DateClassLibrary.Data;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,14 +27,9 @@ builder.Services.AddResponseCompression(opts =>
 });//5
 
 
-
 builder.Services.DIServices(builder.Configuration);//!注册服务
 builder.Services.AddScoped<IUser, LoginAuth>();//@
 builder.Services.AddScoped<IWebApiDateInterface<Department>, DeparmentDate>();//注册接口
-
-builder.Services.AddHostedService<ClassInit>();//注册托管服务，初始化Admin信息
-builder.Services.AddScoped<InitAdmin>();//初始化Admin用户，完成后可删除。
-
 
 
 var app = builder.Build();

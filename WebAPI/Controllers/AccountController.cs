@@ -1,4 +1,5 @@
-﻿using LoginClassLibrary;
+﻿using ClassLibrary.Settings;
+using LoginClassLibrary;
 using LoginClassLibrary.Account;
 using LoginClassLibrary.Login;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
+        [NoCheckJWTVerAttribute]//此标识过滤掉检验JWTVer
         public async Task<ActionResult<LoginResponse>> LoginAsync(LoginRequest loginRequest)
         {
             var result = await user.LoginAsync(loginRequest);
