@@ -251,12 +251,12 @@ else
         DelConfirmStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async void CurrentPageValue(int newPage)
+    private async Task CurrentPageValue(int newPage)
     {
         CurrentPage = newPage;
         await GetPersons();
     }
-    private async void PageSizeChanged(int newPageSize)
+    private async Task PageSizeChanged(int newPageSize)
     {
         PageSize = newPageSize;
         TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
