@@ -1,0 +1,118 @@
+﻿@page "/EditUser"
+
+@if (showMessage)
+{
+    <ShowMessagesComponent Messages="@Message" />
+}
+<tr>
+    <td>
+        <label>@editUser.UserName:</label>
+    </td>
+    <td>
+        <label for="Email">Email:</label>
+        <InputText id="Email" @bind-Value="editUser.Email" class="form-control" required />
+    </td>
+    <td>
+        <label for="Position">Position:</label>
+        <InputSelect id="Position" @bind-Value="@editUser.Position" class="form-control">
+            @foreach (var value in Enum.GetValues(typeof(Position)))
+            {
+                <option value="@value">@value</option>
+            }
+        </InputSelect>
+    </td>
+    <td>
+        @if (editUser.IsDisabled)
+        {
+            <button class="btn btn-success" @onclick="EnableUser">Enable</button>
+        }
+        else
+        {
+            <button class="btn btn-success" @onclick="DisableUser">Disable</button>
+        }
+    </td>
+</tr>
+<tr>
+    <td>
+        <label for="Password">Password:</label>
+        <InputText id="Password" type="password" @bind-Value="userPassword.Password" class="form-control" required />
+    </td>
+    <td>
+        <label for="ConfirmPassword">Confirm Password:</label>
+        <InputText id="ConfirmPassword" type="password" @bind-Value="userPassword.ConfirmPassword" class="form-control"
+            required />
+    </td>
+</tr>
+<tr>
+    <button class="btn btn-success" @onclick="ResetPassword">
+        ResetPassword
+    </button>
+    <button class="btn btn-success" @onclick="UpdateItem">
+        Update
+    </button>
+    <button class="btn btn-success" @onclick="CancelChange">
+        Cancel
+    </button>
+</tr>
+
+
+@code {
+    [Parameter]
+    public UserInfo editUser { get; set; }
+    [Parameter]
+    public UserPassword userPassword { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnUpdateItem { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnCancelChange { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnEnableUser { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnDisableUser { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnResetPassword { get; set; }
+    private bool showMessage = false;
+    private string Message { get; set; }
+
+    public async Task UpdateItem(MouseEventArgs e)
+    {
+        await OnUpdateItem.InvokeAsync(e);
+    }
+    public async Task CancelChange(MouseEventArgs e)
+    {
+        await OnCancelChange.InvokeAsync(e);
+    }
+    public async Task EnableUser(MouseEventArgs e)
+    {
+        editUser.IsDisabled = false;
+        await OnEnableUser.InvokeAsync(e);
+    }
+    public async Task DisableUser(MouseEventArgs e)
+    {
+        editUser.IsDisabled = true;
+        await OnDisableUser.InvokeAsync(e);
+    }
+    public async Task ResetPassword(MouseEventArgs e)
+    {
+        if (string.IsNullOrEmpty(userPassword.Password) && string.IsNullOrEmpty(userPassword.ConfirmPassword))
+        {
+            showMessage = true;
+            Message = "UserName not null!";
+            return;
+        }
+        if (userPassword.Password != userPassword.ConfirmPassword)
+        {
+            showMessage = true;
+            Message = "password not match!";
+            return;
+        }
+        if (userPassword.Password.Count() < 6)
+        {
+            showMessage = true;
+            Message = "password less than 6!";
+            return;
+        }
+        await OnResetPassword.InvokeAsync(e);
+    }
+
+}

@@ -4,18 +4,20 @@
 @using SignalRBlazorApp.Services
 
 
-<div class="alert alert-info" mb-3>@Message</div>
+<div style="display: @ShowMessages;" class="alert alert-info" mb-3>@Message</div>
 <EditForm Model="login" OnValidSubmit="LoginAsync">
     <DataAnnotationsValidator />
     <hr />
     <ValidationSummary class="text-danger" role="alert" />
     <div class="form-floating mb-3">
-        <InputText @bind-Value="login.UserName" class="form-control" autocomplete="username" aria-required="true" placeholder="UserName" />
+        <InputText @bind-Value="login.UserName" class="form-control" autocomplete="username" aria-required="true"
+            placeholder="UserName" />
         <label for="UserName" class="form-label">UserName</label>
         <ValidationMessage For="() => login.UserName" class="text-danger" />
     </div>
     <div class="form-floating mb-3">
-        <InputText type="password" @bind-Value="login.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+        <InputText type="password" @bind-Value="login.Password" class="form-control" autocomplete="current-password"
+            aria-required="true" placeholder="password" />
         <label for="password" class="form-label">Password</label>
         <ValidationMessage For="() => login.Password" class="text-danger" />
     </div>
@@ -25,7 +27,8 @@
 </EditForm>
 
 @code {
-    string Message = string.Empty;
+    private string ShowMessages = "none";
+    private string Message = string.Empty;
     LoginRequest login = new();
     async Task LoginAsync()
     {
@@ -33,11 +36,17 @@
         if (result.Flag)
         {
             var localAuthStateProvider = (LocalAuthenticationStateProvider)AuthStateProvider;
-            await localAuthStateProvider.UpdateAuthenticationState(new UserSession() { Token = result.Token, RefreshToken = result.RefreshToken });
+            await localAuthStateProvider.UpdateAuthenticationState(new UserSession()
+            {
+                Token = result.Token,
+                RefreshToken =
+            result.RefreshToken
+            });
             NavManager.NavigateTo("/", forceLoad: true);
         }
         else
         {
+            ShowMessages = "inline";
             Message = result.Message;
         }
     }

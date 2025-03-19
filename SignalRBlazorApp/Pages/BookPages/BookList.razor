@@ -1,0 +1,357 @@
+﻿@page "/Books"
+
+@if (Items == null)
+{
+    <p>None!!!!!</p>
+}
+else
+{
+    @if (showMessage)
+    {
+        <ShowMessagesComponent Messages="@Message" />
+    }
+    @if (showAddButton)
+    {
+        <td>
+            <button class="btn btn-success" @onclick="AddButtonAsync">Add</button>
+            <input @bind="SearchString" placeholder="SearchByName" />
+            <button class="btn btn-success" @onclick="Search">Search</button>
+        </td>
+    }
+    @if (showAddItem)
+    {
+        <GenerAddItem Item="addBook" T="Book" Title="TitleNamesAdd" H="string" Context="context" >
+            <Labels>
+                <div>
+                    @context
+                </div>
+            </Labels>
+            <ItemDetails>
+                <td><input @bind-value="context.Title" class="form-control" required /></td>
+                <td>
+                    <InputDate @bind-Value="context.PublicationDate" class="form-control" />
+                </td>
+                <td><InputNumber TValue="Decimal" @bind-Value="context.Price" class="form-control"/></td>
+                <td><InputSelect @bind-Value="context.AuthorId" >
+                <option value="">Select a Author...</option>
+            @foreach (var value in Authors)
+            {
+                <option value="@value.Id">@value.AuthorName</option>
+            }
+                </InputSelect>
+                </td>
+
+            </ItemDetails>
+        </GenerAddItem>
+        <button class="btn btn-success" @onclick="AddItemAsync">Create</button>
+        <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+    }
+    @if (showEditItem)
+    {
+        <GenerAddItem Item="editBook" T="Book" Title="TitleNamesAdd" H="string" Context="context" >
+            <Labels>
+                <div>
+                    @context
+                </div>
+            </Labels>
+            <ItemDetails>
+                <td><input @bind-value="context.Title" class="form-control" required /></td>
+                <td>
+                    <InputDate  @bind-Value="context.PublicationDate" class="form-control" required />
+                </td>
+                <td><InputNumber TValue="Decimal" @bind-Value="context.Price" class="form-control"/></td>
+                <td><InputSelect @bind-Value="context.AuthorId" >
+                <option value="">Select a Author...</option>
+            @foreach (var value in Authors)
+            {
+                <option value="@value.Id">@value.AuthorName</option>
+            }
+                </InputSelect>
+                </td>
+
+            </ItemDetails>
+        </GenerAddItem>
+        <button class="btn btn-success" @onclick="SaveItemAsync">Save</button>
+        <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+    }
+    @if (showDeleteConfirm)
+    {
+        <DeleteConfirm ItemName="@book.Title" OnCancelChange="CancelChange" OnDeleteItem="DeleteItemAsync" />
+
+    }
+    @if (showTable)
+    {
+        <GenerItemDetails Items="Items" T="Book" Title="TitleNames" H="string">
+            <Labels>
+                <div>
+                    @context
+                </div>
+            </Labels>
+            <ItemDetails>
+                <td>@context.Id</td>
+                <td>@context.Title</td>
+                <td>@(context.PublicationDate?.ToString("yyyy-MM-dd"))</td>
+                <td>@context.Price</td>
+                <td>@(context.Author?.AuthorName ?? null)</td>
+                <td class="text-center">
+                    <button class="btn btn-success" @onclick="@(() => ShowCommentButtonAsync(@context.Id))">
+                        Comment
+                    </button>
+                    <button class="btn btn-success" @onclick="@(() => EditItemAsync(@context.Id))">
+                        Edit
+                    </button>
+                    <button class="btn btn-success" @onclick="@(() => DeleteConfirm(context.Id))">
+                        Delete
+                    </button>
+                </td>
+                <hr />
+            </ItemDetails>
+        </GenerItemDetails>
+    }
+    @if (showPaginat)
+    {
+        <tr id="paginat">
+            <Paginat TotalPages="TotalPages" CurrentPage="CurrentPage" CurrentPageValueChanged="CurrentPageValue"
+                PageSizeChanged="PageSizeChanged" />
+        </tr>
+    }
+    @if (showComment)
+    {
+        <CommentPage ItemName="@ItemName" ItemId="@ItemId" commentText="@commentText" Comments="Comments"
+            OnAddItem="AddCommentAsycn" OnDeleteItem="DeleteCommentAsync" />
+    }
+}
+
+@code {
+    private IEnumerable<Book>? DateSource { get; set; }
+    private IEnumerable<Book>? DateSourceFilter { get; set; }
+    private List<Book> Items = new();
+    private List<string> TitleNames = new List<string> { "ID", "Title", "PublicationDate", "Price", "Author" };
+    private List<string> TitleNamesAdd = new List<string> { "Title", "PublicationDate", "Price", "Author" };
+    private Book book = new();
+    private Book addBook = new Book();
+    private Book editBook = new Book();
+    private List<Author> Authors = new();
+    private string? SearchString { get; set; }
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    private int TotalPages { get; set; }
+    private string? serviceRequest;
+    private bool showMessage = false;
+    private string? Message;
+    private bool showAddButton = true;
+    private bool showAddItem = false;
+    private bool showEditItem = false;
+    private bool showDeleteConfirm = false;
+    private bool showTable = true;
+    private bool showPaginat=true;
+    private string ItemName { get; set; }
+    private long ItemId { get; set; }
+    private string commentText { get; set; }
+    private bool showComment = false;
+    private string? commentServiceRequest;
+    private IEnumerable<Comment> CommentDataSource { get; set; }
+    private List<Comment> Comments { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
+        HubConnection hubConnection = new HubConnectionBuilder()
+        .WithUrl("https://localhost:7286/chathub", options =>
+        {
+            options.AccessTokenProvider = async () =>
+    {
+            string token = await localStorageService.GetItemAsStringAsync("auth")!;
+            var deserializeToken = Serializations.DeserializeJsonString<UserSession>(token);
+            return deserializeToken.Token;
+        };
+        })
+        .Build();  
+        hubConnection.On<string>("BookMessage", async notemsg =>
+        {
+            if (notemsg == "Update")
+            {
+                DateSource = await bookService.GetItems(serviceRequest);
+                GetItems();
+            }
+            await InvokeAsync(StateHasChanged);
+        });
+        await hubConnection.StartAsync();      
+        serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Book";
+        DateSource = await bookService.GetItems(serviceRequest);
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        GetItems();
+        
+    }
+    private void GetItems()
+    {
+        if (string.IsNullOrEmpty(SearchString))
+        {
+            Items = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+        else
+        {
+            DateSourceFilter = DateSource.Where(r => r.Title.Contains(SearchString)).ToList();
+            TotalPages = DateSourceFilter.Count() % PageSize == 0 ? DateSourceFilter.Count() / PageSize : DateSourceFilter.Count() /
+            PageSize + 1;
+            Items = DateSourceFilter.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+    }
+
+    private async Task Search()
+    {
+        showComment=false;
+        CurrentPage = 1;
+        await OnInitializedAsync();
+    }
+    private async Task AddButtonAsync()
+    {
+        Authors = await authorService.GetItems($"{Config.GetValue<string>("BackendUrl")}/Author");
+        showComment=false;
+        showAddButton = false;
+        showDeleteConfirm = false;
+        showEditItem = false;
+        showAddItem = true;
+    }
+    private async Task AddItemAsync()
+    {
+        var result = await bookService.AddItem(addBook, serviceRequest);
+        if (result.Flag)
+        {            
+            await OnInitializedAsync();
+            CurrentPageValue(TotalPages);
+            showEditItem = false;
+            showAddItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+
+    private async Task EditItemAsync(long id)
+    {
+        Authors = await authorService.GetItems($"{Config.GetValue<string>("BackendUrl")}/Author");
+        if (Items is not null)
+        {
+            editBook = Items.Single(i => i.Id == id);
+            showComment=false;
+            showAddButton = false;
+            showAddItem = false;
+            showDeleteConfirm=false;
+            showEditItem = true;
+        }
+    }
+    private async Task SaveItemAsync()
+    {
+
+        var result = await bookService.EditItem(editBook, serviceRequest);
+        if (result.Flag)
+        {
+            await OnInitializedAsync();
+            book = new Book();
+            showEditItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private void CancelChange()
+    {
+        book = new Book();
+        showEditItem = false;
+        showDeleteConfirm = false;
+        showAddItem = false;
+        showAddButton = true;
+    }
+    private void DeleteConfirm(long id)
+    {
+        book = Items.Single(i => i.Id == id);
+        showAddButton = false;
+        showAddItem = false;
+        showEditItem = false;
+        showDeleteConfirm = true;
+    }
+    private async Task DeleteItemAsync(MouseEventArgs e)
+    {
+        var resutl = await bookService.DeleteItem(serviceRequest, book.Id);
+        if (resutl.Flag)
+        {
+            book = null;
+            await OnInitializedAsync();
+            CurrentPageValue(TotalPages);
+            showDeleteConfirm = false;
+            showComment=false;
+            showAddButton = true;
+            await ShowMessages(resutl.Message);
+        }
+        {
+            await ShowMessages(resutl.Message);
+            return;
+        }
+    }
+    private async Task ShowCommentButtonAsync(long id)
+    {
+        ItemName = Items.FirstOrDefault(x => x.Id == id).Title.ToString();
+        ItemId = Items.FirstOrDefault(x => x.Id == id).Id;
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        CommentDataSource = await
+        httpClient.GetFromJsonAsync<Comment[]>($"{Config.GetValue<string>("BackendUrl")}/Comment/GetComments?id={id}");
+        Comments = CommentDataSource.ToList();
+        showComment = true;
+    }
+    private async Task AddCommentAsycn(string commentText)
+    {
+        Comment comment = new Comment
+        {
+            Message = commentText,
+            BookId = ItemId,
+        };
+        commentServiceRequest = $"{Config.GetValue<string>("BackendUrl")}/Comment";
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PostAsJsonAsync<Comment>($"{commentServiceRequest}/AddComment", comment);
+        await ShowCommentButtonAsync(ItemId);
+    }
+    private async Task DeleteCommentAsync(long id)
+    {
+        commentServiceRequest = $"{Config.GetValue<string>("BackendUrl")}/Comment";
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.DeleteAsync($"{commentServiceRequest}/DelComment?id={id}");
+        await ShowCommentButtonAsync(ItemId);
+    }
+    private void CurrentPageValue(int newPage)
+    {
+        CurrentPage = newPage;
+        GetItems();
+    }
+    private void PageSizeChanged(int newPageSize)
+    {
+        PageSize = newPageSize;
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        CurrentPage = 1;
+        GetItems();
+    }
+
+    private async Task ShowMessages(string messages)
+    {
+        Message = messages;
+        showMessage = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        showMessage = false;
+        StateHasChanged();
+    }
+}

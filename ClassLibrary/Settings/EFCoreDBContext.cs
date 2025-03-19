@@ -19,5 +19,8 @@ namespace ClassLibrary.Settings
         public DbSet<RefreshTokenInfo> RefreshTokenInfos { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<DepPerson> DepPersons { get; set; }
+        public DbSet<Author> Authors { get; set; }
+        public DbSet<Book> Books { get; set; }
+        public DbSet<Comment> Comments { get; set; }
     }
 }

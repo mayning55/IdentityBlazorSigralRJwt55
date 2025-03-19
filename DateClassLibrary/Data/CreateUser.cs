@@ -10,8 +10,9 @@ namespace DateClassLibrary.Data
         /// </summary>
         [Required]
         public string UserName { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
         public Position Position { get; set; }
-        //public DateTime CreateDatetime { get; set; }
 
     }
 }

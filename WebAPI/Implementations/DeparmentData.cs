@@ -13,11 +13,11 @@ namespace WebAPI.Implementations
     /// 部门数据的处理逻辑，IWebApiDateInterface的实现
     // EF的实现方式在PersonController
     /// </summary>
-    public class DeparmentDate : IWebApiDateInterface<Department>
+    public class DeparmentData : IWebApiDataInterface<Department>
     {
         private readonly EFCoreDBContext dbContext;
         private readonly IHubContext<ChatHub> hubContext;
-        public DeparmentDate(EFCoreDBContext dbContext, IHubContext<ChatHub> hubContext)
+        public DeparmentData(EFCoreDBContext dbContext, IHubContext<ChatHub> hubContext)
         {
             this.dbContext = dbContext;
             this.hubContext = hubContext;
@@ -58,13 +58,13 @@ namespace WebAPI.Implementations
             return new Responses(true, "delete done");
         }
 
-        public async Task<List<Department>> GetAll()
+        public async Task<List<Department>> GetItems()
         {
             return await dbContext.Departments.ToListAsync();
         }
         /// <summary>
         /// .Include 和.ThenInclude存在Json maximum of 32 cycles问题
-        /// 获取多对多关系的全部，返回Json格式化后的对象。也可以分开返回，如PersonController
+        /// 获取多对多关系的全部，返回Json格式化后的对象。也可以分开返回，如PersonController中的GetDepSelectAsync
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -116,6 +116,11 @@ namespace WebAPI.Implementations
                 return new Responses(true, "done!");
             }
             return new Responses(false, "item is notfound");
+        }
+        public async Task<Department> GetItemById(long id)
+        {
+            var dep = await dbContext.Departments.FindAsync(id);
+            return dep;
         }
     }
 }

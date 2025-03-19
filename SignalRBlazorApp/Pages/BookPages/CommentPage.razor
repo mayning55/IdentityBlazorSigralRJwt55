@@ -1,0 +1,69 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+@page "/CommentPage"
+<tr>
+    <button class="btn btn-success" @onclick="AddCommentAsycn">
+        --@ItemName Comment:
+    </button>
+
+</tr>
+<tr>
+    <InputTextArea @bind-Value="@commentText"></InputTextArea>
+</tr>
+<QuickGrid Items="Items" ItemKey="(x => x.Id)" Pagination="pagination">
+    <PropertyColumn Property="@(p => p.Message)" Title="Comment" />
+
+                <TemplateColumn Context="Items">
+                        <AuthorizeView>
+        <Authorized>
+            @if (@context.User.Identity!.Name == "Admin")
+            {
+                    <button @onclick="@(() => DeleteCommentAsync(Items.Id))">Delete</button>
+                    }
+                            </Authorized>
+    </AuthorizeView>
+                </TemplateColumn>
+
+
+</QuickGrid>
+<Paginator State="pagination" />
+<input type="search" @bind="search" @bind:event="oninput" placeholder="search byname" />
+
+
+
+@code {
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+    [Parameter]
+    public string ItemName { get; set; }
+    [Parameter]
+    public long ItemId { get; set; }
+    [Parameter]
+    public string commentText { get; set; }
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    [Parameter]
+    public int TotalPages { get; set; }
+    [Parameter]
+    public List<Comment> Comments { get; set; }
+    private IQueryable<Comment> Items => Comments.Where(c => c.Message.Contains(search)).AsQueryable();
+    private string search = string.Empty;
+    [Parameter]
+    public EventCallback<string> OnAddItem { get; set; }
+    [Parameter]
+    public EventCallback<long> OnDeleteItem { get; set; }
+
+    private async Task AddCommentAsycn(MouseEventArgs e)
+    {
+        if (OnAddItem.HasDelegate)
+        {
+            await OnAddItem.InvokeAsync(commentText);
+        }
+    }
+    private async Task DeleteCommentAsync(long id)
+    {
+        if (OnDeleteItem.HasDelegate)
+        {
+            await OnDeleteItem.InvokeAsync(id);
+        }
+    }
+}

@@ -16,7 +16,7 @@ else
             <input @bind="NewFirstName" placeholder="New FirstName" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="AddPerson">Add</button>
+            <button class="btn btn-success" @onclick="AddPersonAsync">Add</button>
         </td>
         <td>
             <input @bind="SearchString" />
@@ -33,7 +33,7 @@ else
             <input @bind="person.FirstName" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="SaveItem">
+            <button class="btn btn-success" @onclick="SaveItemAsync">
                 Save
             </button>
             <button class="btn btn-danger" @onclick="CancelChange">
@@ -43,7 +43,7 @@ else
     </tr>
 
     <tr>
-        <a>Departments</a>
+        <a>Person in Departments</a>
         <SelectComponent Deps="DepSelects" SelectedItems="SelectId" />
     </tr>
     </tr>
@@ -57,7 +57,7 @@ else
                 No
             </button>
         </td> *@
-        <DeleteConfirm ItemName="@person.FirstName" OnCancelChange="CancelChange" OnDeleteItem="DeleteItem"/>
+        <DeleteConfirm ItemName="@person.FirstName" OnCancelChange="CancelChange" OnDeleteItem="DeleteItemAsync" />
     </tr>
     <table class="table">
         <thead>
@@ -81,7 +81,7 @@ else
                     <td>@item.Number</td>
                     <td>@item.FirstName</td>
                     <td class="text-center">
-                        <button class="btn btn-warning" @onclick="@(() => EditPerson(item.Id))">
+                        <button class="btn btn-warning" @onclick="@(() => EditPersonAsync(item.Id))">
                             Edit
                         </button>
                         <button class="btn btn-warning" @onclick="@(() => DeleteConfirm(item.Id))">
@@ -150,15 +150,15 @@ else
             if (notemsg == "Update")
             {
                 DateSource = await httpClient.GetFromJsonAsync<Person[]>(requestUrl);
-                await GetPersons();
+                GetPersons();
             }
             await InvokeAsync(StateHasChanged);
         });
         await hubConnection.StartAsync();
 
-        await GetPersons();
+        GetPersons();
     }
-    private async Task GetPersons()
+    private void GetPersons()
     {
 
         if (string.IsNullOrEmpty(SearchString))
@@ -177,7 +177,7 @@ else
         CurrentPage = 1;
         await OnInitializedAsync();
     }
-    private async Task AddPerson()
+    private async Task AddPersonAsync()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (!string.IsNullOrEmpty(NewNumber) && !string.IsNullOrEmpty(NewFirstName))
@@ -191,7 +191,7 @@ else
             EditRowStyle = "none";
         }
     }
-    private async Task EditPerson(long id)
+    private async Task EditPersonAsync(long id)
     {
         if (Persons is not null)
         {
@@ -211,7 +211,7 @@ else
             EditRowStyle = "table-row";
         }
     }
-    private async Task SaveItem()
+    private async Task SaveItemAsync()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (person is not null)
@@ -221,11 +221,11 @@ else
         }
         DepSelects.Clear();
         SelectId.Clear();
-        await GetPersons();
+        await OnInitializedAsync();
         EditRowStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async Task CancelChange(MouseEventArgs e)
+    private void CancelChange(MouseEventArgs e)
     {
         DepSelects.Clear();
         SelectId.Clear();
@@ -233,14 +233,14 @@ else
         DelConfirmStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async Task DeleteConfirm(long id)
+    private void DeleteConfirm(long id)
     {
-            person = Persons.Single(i => i.Id == id);
-            AddRowStyle = "none";
-            EditRowStyle = "none";
-            DelConfirmStyle = "inline";
+        person = Persons.Single(i => i.Id == id);
+        AddRowStyle = "none";
+        EditRowStyle = "none";
+        DelConfirmStyle = "inline";
     }
-    private async Task DeleteItem(MouseEventArgs e)
+    private async Task DeleteItemAsync(MouseEventArgs e)
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (person is not null)
@@ -251,23 +251,16 @@ else
         DelConfirmStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async Task CurrentPageValue(int newPage)
+    private void CurrentPageValue(int newPage)
     {
         CurrentPage = newPage;
-        await GetPersons();
+        GetPersons();
     }
-    private async Task PageSizeChanged(int newPageSize)
+    private void PageSizeChanged(int newPageSize)
     {
         PageSize = newPageSize;
         TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
         CurrentPage = 1;
-        await GetPersons();
-    }
-    public class Person
-    {
-        public long Id { get; set; }
-        public string Number { get; set; }
-        public string FirstName { get; set; }
-
+        GetPersons();
     }
 }

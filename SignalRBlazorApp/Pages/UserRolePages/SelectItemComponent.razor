@@ -1,0 +1,52 @@
+﻿@page "/SelectItemComponent"
+<tr>
+
+</tr>
+<p>------ Chick Items ------</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <div class="table">
+                <table>
+                    @{ 
+                        int rowLength = 3; 
+                        for (int i = 0; i < DetailItems.Count(); i += rowLength)
+                        {
+                            <tr>
+                                @for (int j = 0; j < rowLength && (i + j) < DetailItems.Count(); j++)
+                                {
+                                    var item = DetailItems[i + j];
+           <td>
+            <input type="checkbox" checked=@item.IsSelect
+                @onchange="eventArgs => { CheckboxClicked(item.Name, eventArgs.Value); }" />
+            @item.Name <br />
+        </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    //另一种选择组件，返回的是对象列表。
+    [Parameter]
+    public List<UserInRole> DetailItems { get; set; }
+    [Parameter]
+    public List<UserInRole> SelectedItems { get; set; }
+
+    public void CheckboxClicked(string selectItem, object isChecked)
+    {
+        SelectedItems.Add(new UserInRole
+        {
+            Name = selectItem,
+            IsSelect = (bool)isChecked
+
+        });
+        StateHasChanged();
+    }
+
+}

@@ -27,19 +27,19 @@ namespace WebAPI.Controllers
         // GET: Person/GetPersons
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
+        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsAsync()
         {
             return await dbContext.Persons.ToListAsync();
         }
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByPage()
+        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByPageAsync()
         {
             return await dbContext.Persons.Take(5).ToListAsync();
         }
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByName(string? filterName, int currentPage)
+        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByNameAsync(string? filterName, int currentPage)
         {
             if (string.IsNullOrWhiteSpace(filterName))
             {
@@ -53,7 +53,7 @@ namespace WebAPI.Controllers
         }
         // GET: Person/GetPersonByNumber
         [HttpGet]
-        public async Task<ActionResult<Person>> GetPersonById(long id)
+        public async Task<ActionResult<Person>> GetPersonByIdAsync(long id)
         {
             var person = await dbContext.Persons.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -79,7 +79,7 @@ namespace WebAPI.Controllers
             dbContext.Persons.Add(item);
             await dbContext.SaveChangesAsync();
             await hubContext.Clients.All.SendAsync("NoteMessage", "Update");//变更后发送信息给在线用户重新加载List页面，下同。
-            return CreatedAtAction(nameof(GetPersonById), new { Id = person.Id }, person);
+            return CreatedAtAction(nameof(GetPersonByIdAsync), new { Id = person.Id }, person);
         }
 
         // DELETE: Person/DeletePerson
@@ -103,7 +103,7 @@ namespace WebAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut]
         [Authorize]
-        public async Task<ActionResult<Person>> EditPerson(long id, Person person)
+        public async Task<ActionResult<Person>> EditPersonAsync(long id, Person person)
         {
             var newPerson = await dbContext.Persons.FirstOrDefaultAsync(p => p.Id == id);
 

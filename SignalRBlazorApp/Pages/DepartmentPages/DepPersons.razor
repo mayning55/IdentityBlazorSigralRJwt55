@@ -8,10 +8,7 @@
 }
 else
 {
-    <p> --Item Details--</p>
-    <p>
-        <input type="search" @bind="search" @bind:event="oninput" />
-    </p>
+    <p> ---Item Details--- <input type="search" @bind="search" @bind:event="oninput" /></p>
     <QuickGrid Items="personfilter" Pagination="pagination">
         <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Number)" Sortable="true" />

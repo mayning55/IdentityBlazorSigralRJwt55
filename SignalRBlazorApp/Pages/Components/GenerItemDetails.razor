@@ -1,0 +1,47 @@
+﻿@namespace Components
+@typeparam T
+@typeparam H
+
+
+<table class="table">
+    <thead>
+        @if (Title != null)
+        {
+            <tr>
+                @foreach (var item in Title)
+                {
+                    <th>
+                        @Labels(item)
+                    </th>
+                }
+            </tr>
+        }
+    </thead>
+    <tbody>
+        @if (Items != null)
+        {
+            @foreach (var model in Items)
+            {
+                <tr>
+                    @ItemDetails(model).
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+
+@code {
+    [Parameter]
+    public ICollection<T> Items { get; set; }
+
+    [Parameter]
+    public ICollection<H> Title { get; set; }
+
+    [Parameter]
+    public RenderFragment<T> ItemDetails { get; set; }
+
+    [Parameter]
+    public RenderFragment<H> Labels { get; set; }
+
+}

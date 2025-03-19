@@ -9,16 +9,18 @@ namespace WebAPI.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "AdminRole")]
     public class UserController : ControllerBase
     {
         private readonly EFCoreDBContext dbContext;
         private readonly UserManager<UserExtend> userManager;
+        private readonly RoleManager<IdentityRole> roleManager;
 
-        public UserController(EFCoreDBContext dbContext, UserManager<UserExtend> userManager)
+        public UserController(EFCoreDBContext dbContext, UserManager<UserExtend> userManager, RoleManager<IdentityRole> roleManager)
         {
             this.dbContext = dbContext;
             this.userManager = userManager;
+            this.roleManager = roleManager;
         }
         /// <summary>
         /// 返回UserInfo指定数据。
@@ -31,7 +33,7 @@ namespace WebAPI.Controllers
             IEnumerable<UserInfo> user = users.Select(p =>
                                         new UserInfo
                                         {
-                                            Id = p.Id,
+                                            //Id = p.Id,
                                             UserName = p.UserName,
                                             IsDisabled = p.IsDisabled,
                                             CreateDatetime = p.CreateDatetime,
@@ -52,7 +54,7 @@ namespace WebAPI.Controllers
                 var user = await userManager.FindByNameAsync(userName);
                 UserInfo userInfos = new UserInfo()
                 {
-                    Id = user.Id,
+                    //Id = user.Id,
                     UserName = user.UserName,
                     IsDisabled = user.IsDisabled,
                     CreateDatetime = user.CreateDatetime,
@@ -62,25 +64,8 @@ namespace WebAPI.Controllers
                 return Ok(userInfos);
             }
         }
-        [HttpPut]
-        public async Task<IActionResult> EditUserAsync(string userID, UserInfo userInfo)
-        {
-            var user = await userManager.FindByIdAsync(userID);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                user.UserName = userInfo.UserName;
-                user.Position = userInfo.Position;
-                user.Email = userInfo.Email;
-                var result = await userManager.UpdateAsync(user);
-                return Ok(result);
-            }
-        }
         [HttpPost]
-        public async Task<ActionResult<UserExtend>> AddUserAsync(CreateUser createUser)
+        public async Task<ActionResult<CreateUser>> AddUserAsync(CreateUser createUser)
         {
             if (await userManager.FindByNameAsync(createUser.UserName) == null)
             {
@@ -88,16 +73,40 @@ namespace WebAPI.Controllers
                 {
                     UserName = createUser.UserName,
                     Position = createUser.Position,
+                    Email = createUser.Email,
                     CreateDatetime = DateTime.UtcNow.AddHours(8)
                 };
                 await userManager.CreateAsync(user, createUser.Password);
+                return Ok(createUser.UserName);
             }
-            return NotFound();
+            else
+            {
+                return NotFound("user is exists");
+            }
+
         }
         [HttpPut]
-        public async Task<IActionResult> DisableUserAsync(string id)
+        public async Task<IActionResult> EditUserAsync(string userName, UserInfo userInfo)
         {
-            var user = await userManager.FindByIdAsync(id);
+            var user = await userManager.FindByNameAsync(userName);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                //user.UserName = userInfo.UserName;
+                user.Position = userInfo.Position;
+                user.Email = userInfo.Email;
+                var result = await userManager.UpdateAsync(user);
+                return Ok(result);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> DisableUserAsync(string userName)
+        {
+            var user = await userManager.FindByNameAsync(userName);
             if (user == null)
             {
                 return NotFound();
@@ -108,13 +117,13 @@ namespace WebAPI.Controllers
                 await userManager.UpdateAsync(user);
                 await userManager.SetLockoutEnabledAsync(user, true);
                 await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
-                return NoContent();
+                return Ok();
             }
         }
         [HttpPut]
-        public async Task<IActionResult> EnableUserAsync(string id)
+        public async Task<IActionResult> EnableUserAsync(string userName)
         {
-            var user = await userManager.FindByIdAsync(id);
+            var user = await userManager.FindByNameAsync(userName);
             if (user == null)
             {
                 return NotFound();
@@ -124,17 +133,17 @@ namespace WebAPI.Controllers
                 user.IsDisabled = false;
                 await userManager.UpdateAsync(user);
                 await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddHours(8));
-                return NoContent();
+                return Ok();
             }
         }
         [HttpPost]
-        public async Task<IActionResult> RestUserPasswordAsync(string id, UserPassword userPassword)
+        public async Task<IActionResult> RestUserPasswordAsync(string userName, UserPassword userPassword)
         {
             if (userPassword is null || userPassword.Password == "string")
             {
-                return NotFound("string");//todo
+                return NotFound();//todo
             }
-            var user = await userManager.FindByIdAsync(id);
+            var user = await userManager.FindByNameAsync(userName);
             if (user == null)
             {
                 return NotFound();
@@ -146,8 +155,88 @@ namespace WebAPI.Controllers
                 {
                     await userManager.AddPasswordAsync(user, userPassword.Password);
                 }
+                return Ok();
             }
-            return NoContent();
+        }
+        [HttpGet]
+        public async Task<ActionResult<UserInRole>> GetRoleOwnUserAsync(string userName)
+        {
+            if (userName is null)
+            {
+                return NotFound();
+            }
+            var user = await userManager.FindByNameAsync(userName);
+            if (user != null)
+            {
+                List<UserInRole> roleOwnUsers = new List<UserInRole>();
+                var allRole = await roleManager.Roles.ToListAsync();
+                if (userName is null)
+                {
+                    foreach (var role in allRole)
+                    {
+                        roleOwnUsers.Add(new UserInRole
+                        {
+                            Name = role.Name,
+                            IsSelect = false
+                        });
+                    }
+                    return Ok(roleOwnUsers);
+                }
+                else
+                {
+                    foreach (var role in allRole)
+                    {
+                        if (await userManager.IsInRoleAsync(user, role.Name))
+                        {
+                            roleOwnUsers.Add(new UserInRole
+                            {
+                                Name = role.Name,
+                                IsSelect = true
+                            });
+                        }
+                        else
+                        {
+                            roleOwnUsers.Add(new UserInRole
+                            {
+                                Name = role.Name,
+                                IsSelect = false
+                            });
+                        }
+                    }
+                    return Ok(roleOwnUsers);
+                }
+            }
+            return NotFound();
+        }
+        [HttpPut]
+        public async Task<ActionResult> UpdateRoleOwnUserAsync(string userName, List<UserInRole> roleOwnUsers)
+        {
+            if (userName is null)
+            {
+                return NotFound();
+            }
+            var user = await userManager.FindByNameAsync(userName);
+            if (user != null)
+            {
+                for (int i = 0; i < roleOwnUsers.Count(); i++)
+                {
+                    var role = await roleManager.FindByNameAsync(roleOwnUsers[i].Name);
+                    if (roleOwnUsers[i].IsSelect)
+                    {
+                        await userManager.AddToRoleAsync(user, role.Name);
+                    }
+                    else if (!roleOwnUsers[i].IsSelect && (await userManager.IsInRoleAsync(user, role.Name)))
+                    {
+                        await userManager.RemoveFromRoleAsync(user, role.Name);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                return Ok();
+            }
+            return NotFound();
         }
 
     }

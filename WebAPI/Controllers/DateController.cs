@@ -11,11 +11,11 @@ namespace WebAPI.Controllers
     /// <param name="dateInterface"></param>
     [Route("[controller]/[action]")]
     [ApiController]
-    public class DateController<T>(IWebApiDateInterface<T> dateInterface) : Controller where T : class
+    public class DateController<T>(IWebApiDataInterface<T> dateInterface) : Controller where T : class
     {
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllAsync() => Ok( await dateInterface.GetAll());
+        public async Task<IActionResult> GetItemsAsync() => Ok(await dateInterface.GetItems());
 
         [HttpDelete]
         [Authorize(Roles = "AdminRole,NormalUser")]
@@ -38,7 +38,7 @@ namespace WebAPI.Controllers
             return BadRequest();
         }
         [HttpPost]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> AddItemAsync(T model)
         {
             if (model is not null)
@@ -49,7 +49,7 @@ namespace WebAPI.Controllers
         }
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> EditItem(T model)
+        public async Task<IActionResult> EditItemAsync(T model)
         {
             if (model is not null)
             {
@@ -57,7 +57,17 @@ namespace WebAPI.Controllers
             }
             return BadRequest();
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetItemByIdAsync(long id)
+        {
+            if (id > 0)
+            {
+                return Ok(await dateInterface.GetItemById(id));
+            }
+            return BadRequest();
+        }
 
     }
-    
+
 }

@@ -5,9 +5,9 @@ namespace ClassLibrary.Settings
 {
     /// <summary>
     /// 配置数据库的连接
-    /// EF迁移用，迁移完可删除。
+    /// EF迁移用
     /// </summary>
-    public class EFCoreDBContextFactory:IDesignTimeDbContextFactory<EFCoreDBContext>
+    public class EFCoreDBContextFactory : IDesignTimeDbContextFactory<EFCoreDBContext>
     {
         public EFCoreDBContext CreateDbContext(string[] args)
         {

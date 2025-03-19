@@ -7,7 +7,6 @@ using LoginClassLibrary.Login;
 using WebAPI.Implementations;
 using DateClassLibrary;
 using DateClassLibrary.Data;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +28,9 @@ builder.Services.AddResponseCompression(opts =>
 
 builder.Services.DIServices(builder.Configuration);//!注册服务
 builder.Services.AddScoped<IUser, LoginAuth>();//@
-builder.Services.AddScoped<IWebApiDateInterface<Department>, DeparmentDate>();//注册接口
+builder.Services.AddScoped<IWebApiDataInterface<Department>, DeparmentData>();//注册接口和实现方法,下同
+builder.Services.AddScoped<IWebApiDataInterface<Author>, AuthorData>();
+builder.Services.AddScoped<IWebApiDataInterface<Book>, BookData>();
 
 
 var app = builder.Build();

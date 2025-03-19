@@ -1,9 +1,12 @@
 using Blazored.LocalStorage;
+using DateClassLibrary;
+using DateClassLibrary.Data;
 using LoginClassLibrary.Login;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SignalRBlazorApp;
+using SignalRBlazorApp.ServiceClass;
 using SignalRBlazorApp.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -23,6 +26,8 @@ builder.Services.AddHttpClient("SystemApiClient", client =>
 builder.Services.AddScoped<GetHttpClient>();
 builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<IUser, AccountAuth>();
+builder.Services.AddScoped<IClientDataInterface<Author>, ClientImplementation<Author>>();//注册接口和实现方法
+builder.Services.AddScoped<IClientDataInterface<Book>, ClientImplementation<Book>>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, LocalAuthenticationStateProvider>();//!!

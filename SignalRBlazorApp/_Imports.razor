@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using DateClassLibrary
 @using LoginClassLibrary.Account
 @using LoginClassLibrary.Login
 @using DateClassLibrary.Data
@@ -12,12 +13,16 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.JSInterop
 @using SignalRBlazorApp
+@using Blazored.LocalStorage
 @using SignalRBlazorApp.Layout
 @using SignalRBlazorApp.Services
-@using Blazored.LocalStorage
+@using Components
 @inject GetHttpClient getHttpClient
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IUser accountService
 @inject NavigationManager NavManager
 @inject ILocalStorageService localStorageService
 @inject IConfiguration Config
+
+@inject IClientDataInterface<Author> authorService
+@inject IClientDataInterface<Book> bookService

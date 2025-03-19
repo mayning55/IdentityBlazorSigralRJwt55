@@ -1,0 +1,269 @@
+﻿@page "/Authors"
+
+@if (Items == null)
+{
+    <p>None!!</p>
+}
+else
+{
+    @if (showMessage)
+    {
+        <ShowMessagesComponent Messages="@Message" />
+    }
+    @if (showAddButton)
+    {
+        <td>
+            <button class="btn btn-success" @onclick="AddButton">Add</button>
+            <input @bind="SearchString" placeholder="SearchByName" />
+            <button class="btn btn-success" @onclick="Search">Search</button>
+        </td>
+    }
+    @if (showAddItem)
+    {
+        <GenerAddItem Item="addAuthor" T="Author" H="string" Title="TitleNames" Context="context">
+            <Labels>
+                @context
+            </Labels>
+            <ItemDetails>
+                <td><input @bind-value="context.AuthorName" /></td>
+            </ItemDetails>
+        </GenerAddItem>
+        <button class="btn btn-success" @onclick="AddItemAsync">Create</button>
+        <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+    }
+    @if (showEditItem)
+    {
+        <GenerAddItem Item="editAuthor" T="Author" H="string" Title="TitleNames" Context="context">
+            <Labels>
+                <th>Author Name</th>
+            </Labels>
+            <ItemDetails>
+                <td><input @bind-value="context.AuthorName" /></td>
+            </ItemDetails>
+        </GenerAddItem>
+        <button class="btn btn-success" @onclick="SaveItemAsync">Save</button>
+        <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+    }
+    @if (showDeleteConfirm)
+    {
+        <DeleteConfirm ItemName="@author.AuthorName" OnCancelChange="CancelChange" OnDeleteItem="DeleteItemAsync" />
+    }
+
+    @if (showTable)
+    {
+        <GenerItemDetails Items="Items" T="Author" Title="TitleNames" H="string">
+            <Labels>
+                <div>
+                    @context
+                </div>
+            </Labels>
+            <ItemDetails>
+                <td>@context.Id</td>
+                <td>@context.AuthorName</td>
+                <td class="text-center">
+                    <button class="btn btn-success" @onclick="@(() => EditItemAsync(@context.Id))">
+                        Edit
+                    </button>
+                    <button class="btn btn-success" @onclick="@(() => DeleteConfirm(context.Id))">
+                        Delete
+                    </button>
+                </td>
+                <hr />
+            </ItemDetails>
+        </GenerItemDetails>
+    }
+    @if (showPaginat)
+    {
+        <tr id="paginat">
+            <Paginat TotalPages="TotalPages" CurrentPage="CurrentPage" CurrentPageValueChanged="CurrentPageValue"
+                PageSizeChanged="PageSizeChanged" />
+        </tr>
+    }
+}
+
+
+@code {
+    private IEnumerable<Author>? DateSource { get; set; }
+    private IEnumerable<Author>? DateSourceFilter { get; set; }
+    private List<Author> Items = new();
+    private List<string> TitleNames = new List<string> { "AuthorName" };
+    private Author author = new();
+    private Author addAuthor = new();
+    private Author editAuthor = new();
+    private string? SearchString { get; set; }
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    private int TotalPages { get; set; }
+    private string? serviceRequest;
+    private bool showMessage = false;
+    private string? Message;
+    private bool showAddButton = true;
+    private bool showAddItem = false;
+    private bool showEditItem = false;
+    private bool showDeleteConfirm = false;
+    private bool showTable = true;
+    private bool showPaginat = true;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
+        HubConnection hubConnection = new HubConnectionBuilder()
+        .WithUrl("https://localhost:7286/chathub", options =>
+        {
+            options.AccessTokenProvider = async () =>
+    {
+            string token = await localStorageService.GetItemAsStringAsync("auth")!;
+            var deserializeToken = Serializations.DeserializeJsonString<UserSession>(token);
+            return deserializeToken.Token;
+        };
+        })
+        .Build();
+        hubConnection.On<string>("BookMessage", async notemsg =>
+        {
+            if (notemsg == "Update")
+            {
+                DateSource = await authorService.GetItems(serviceRequest);
+                GetItems();
+            }
+            await InvokeAsync(StateHasChanged);
+        });
+        await hubConnection.StartAsync();
+        serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Author";
+        DateSource = await authorService.GetItems(serviceRequest);
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        GetItems();
+    }
+    private void GetItems()
+    {
+        if (string.IsNullOrEmpty(SearchString))
+        {
+            Items = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+        else
+        {
+            DateSourceFilter = DateSource.Where(r => r.AuthorName.Contains(SearchString)).ToList();
+            TotalPages = DateSourceFilter.Count() % PageSize == 0 ? DateSourceFilter.Count() / PageSize : DateSourceFilter.Count() /
+            PageSize + 1;
+            Items = DateSourceFilter.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+    }
+    private async Task Search()
+    {
+        CurrentPage = 1;
+        await OnInitializedAsync();
+    }
+    private void AddButton()
+    {
+        Author author = new Author();
+        showAddButton = false;
+        showDeleteConfirm = false;
+        showEditItem = false;
+        showAddItem = true;
+    }
+    private async Task AddItemAsync()
+    {
+        var result = await authorService.AddItem(addAuthor, serviceRequest);
+        if (result.Flag)
+        {
+            addAuthor.AuthorName = null;
+            await OnInitializedAsync();
+            CurrentPageValue(TotalPages);
+            showEditItem = false;
+            showAddItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private void EditItemAsync(long id)
+    {
+        if (Items is not null)
+        {
+            editAuthor = Items.Single(i => i.Id == id);
+            showAddButton = false;
+            showAddItem = false;
+            showDeleteConfirm = false;
+            showEditItem = true;
+        }
+    }
+    private async Task SaveItemAsync()
+    {
+        var result = await authorService.EditItem(editAuthor, serviceRequest);
+        if (result.Flag)
+        {
+            await OnInitializedAsync();
+            showEditItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private void CancelChange()
+    {
+        author = new Author();
+        showEditItem = false;
+        showDeleteConfirm = false;
+        showAddItem = false;
+        showAddButton = true;
+    }
+    private void DeleteConfirm(long id)
+    {
+        author = Items.Single(i => i.Id == id);
+        showAddItem = false;
+        showAddButton = false;
+        showEditItem = false;
+        showDeleteConfirm = true;
+    }
+    private async Task DeleteItemAsync(MouseEventArgs e)
+    {
+        var resutl = await authorService.DeleteItem(serviceRequest, author.Id);
+        if (resutl.Flag)
+        {
+            await OnInitializedAsync();
+            CurrentPageValue(TotalPages);
+            showDeleteConfirm = false;
+            showAddButton = true;
+            await ShowMessages(resutl.Message);
+        }
+        {
+            await ShowMessages(resutl.Message);
+            return;
+        }
+    }
+    private void CurrentPageValue(int newPage)
+    {
+        CurrentPage = newPage;
+        GetItems();
+    }
+    private void PageSizeChanged(int newPageSize)
+    {
+        PageSize = newPageSize;
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        CurrentPage = 1;
+        GetItems();
+    }
+    private async Task ShowMessages(string messages)
+    {
+        Message = messages;
+        showMessage = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        showMessage = false;
+        StateHasChanged();
+    }
+
+}

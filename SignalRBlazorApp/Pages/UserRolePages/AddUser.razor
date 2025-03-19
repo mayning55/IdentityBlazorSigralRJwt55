@@ -1,0 +1,96 @@
+﻿@page "/AddUser"
+@using System.ComponentModel.DataAnnotations
+
+@if (showMessage)
+{
+    <ShowMessagesComponent Messages="@Message" />
+}
+<tr>
+    <td>
+        <label for="Username">Username:</label>
+        <InputText id="Username" @bind-Value="createUser.UserName" class="form-control" required />
+
+    </td>
+    <td>
+        <label for="Email">Email:</label>
+        <InputText id="Email" @bind-Value="createUser.Email" class="form-control" required />
+    </td>
+    <td>
+        <label for="Position">Position:</label>
+        <InputSelect id="Position" @bind-Value="@createUser.Position" class="form-control">
+            @foreach (var value in Enum.GetValues(typeof(Position)))
+            {
+                <option value="@value">@value</option>
+            }
+        </InputSelect>
+    </td>
+</tr>
+<tr>
+    <td>
+        <label for="Password">Password:</label>
+        <InputText id="Password" type="password" @bind-Value="createUser.Password" class="form-control" required />
+    </td>
+    <td>
+        <label for="ConfirmPassword">Confirm Password:</label>
+        <InputText id="ConfirmPassword" type="password" @bind-Value="createUser.ConfirmPassword" class="form-control"
+            required />
+    </td>
+</tr>
+<tr>
+    <td>
+        <button class="btn btn-success" @onclick="AddItem">
+            Create
+        </button>
+    </td>
+    <td>
+        <button class="btn btn-success" @onclick="CancelChange">
+            Cancel
+        </button>
+    </td>
+</tr>
+
+
+@code {
+    [Parameter]
+    public CreateUser addUser { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnAddItem { get; set; }
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnCancelChange { get; set; }
+    public CreateUser createUser = new CreateUser();
+    private bool showMessage = false;
+    private string Message { get; set; } = string.Empty;
+
+    public async Task AddItem(MouseEventArgs e)
+    {
+        if (string.IsNullOrEmpty(createUser.UserName))
+        {
+            showMessage = true;
+            Message = "UserName not null!";
+            return;
+        }
+        if (createUser.Password.Count() < 6)
+        {
+            showMessage = true;
+            Message = "password less than 6!";
+            return;
+        }
+        if (createUser.Password != createUser.ConfirmPassword)
+        {
+            showMessage = true;
+            Message = "password not match!";
+            return;
+        }
+        addUser.UserName = createUser.UserName;
+        addUser.Email = createUser.Email;
+        addUser.Position = createUser.Position;
+        addUser.Password = createUser.Password;
+        addUser.ConfirmPassword = createUser.Password;
+        await OnAddItem.InvokeAsync(e);
+
+    }
+    public async Task CancelChange(MouseEventArgs e)
+    {
+        await OnCancelChange.InvokeAsync(e);
+    }
+}

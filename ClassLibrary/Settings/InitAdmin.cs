@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 namespace ClassLibrary.Settings
 {
     /// <summary>
-    /// 初始化Admin用户，初始化完成后可删除。
+    /// 初始化Admin用户
     /// 还可以使用Data-Seed,参阅：https://learn.microsoft.com/zh-cn/ef/core/modeling/data-seeding
     /// </summary>
     public class InitAdmin

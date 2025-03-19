@@ -42,8 +42,8 @@ namespace WebAPI.Implementations
             }
             else
             {
-                user.JWTVer++;
-                await userManager.UpdateAsync(user);
+                //user.JWTVer++;
+                //await userManager.UpdateAsync(user);
                 var roleList = new List<string>();
                 foreach (var role in await userManager.GetRolesAsync(user))
                 {
@@ -126,7 +126,7 @@ namespace WebAPI.Implementations
             {
                 userClaims.Add(new Claim(ClaimTypes.Role, r.ToString()));
             }
-            userClaims.Add(new Claim("JWTVer", user.JWTVer.ToString()));
+            //userClaims.Add(new Claim("JWTVer", user.JWTVer.ToString()));
             var token = new JwtSecurityToken(
                 issuer: configuration["JWT:Issuer"],
                 audience: configuration["JWT:Audience"],

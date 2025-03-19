@@ -1,0 +1,341 @@
+﻿@page "/Users"
+@using Blazored.LocalStorage
+@using DateClassLibrary
+@using DateClassLibrary.Data
+@inject IConfiguration Config
+@inject ILocalStorageService localStorageService
+@inject NavigationManager NavigationManager
+
+@if (Items == null)
+{
+    <p>It's None!!</p>
+}
+else
+{
+    @if (showMessage)
+    {
+        @* <div class="alert alert-info" mb-5>@Messages</div> *@
+        <ShowMessagesComponent Messages="@Message" />
+    }
+
+    @if (showAddItem)
+    {
+        <tr>
+            <AddUser addUser="addUser" OnCancelChange="CancelChange" OnAddItem="AddItmAsync" />
+        </tr>
+
+    }
+    @if (showAddButton)
+    {
+        <td>
+            <button class="btn btn-success" @onclick="AddUserButton">Add</button>
+            <input @bind="SearchString" placeholder="SearchByName" />
+            <button class="btn btn-success" @onclick="Search">Search</button>
+        </td>
+    }
+    @if (showEditItem)
+    {
+        <tr>
+            <EditUser editUser="editUser" OnCancelChange="CancelChange" OnUpdateItem="SaveItemAsync"
+                OnEnableUser="EnableUserAsync" OnDisableUser="DisableUserAsync" OnResetPassword="ResetPasswordAsync"
+                userPassword="userPassword" />
+        </tr>
+
+    }
+    @if (showTable)
+    {
+
+        <GenerItemDetails Items="Items" T="UserInfo" Title="TitleNames" H="string">
+            <Labels>
+                <div>
+                    @context
+                </div>
+            </Labels>
+            <ItemDetails>
+                <td>@context.UserName</td>
+                <td>@context.Email</td>
+                <td>@(context.CreateDatetime.ToString("yyyy-MM-dd"))</td>
+                <td>@context.Position</td>
+                <td class="text-center">
+                    <button class="btn btn-success" @onclick="@(() => ItemDetailAsync(context.UserName))">
+                        Detail
+                    </button>
+                    <button class="btn btn-success" @onclick="@(() => EditItemAsync(context.UserName))">
+                        Edit
+                    </button>
+                </td>
+                <hr />
+            </ItemDetails>
+        </GenerItemDetails>
+
+    }
+
+    @if (showPaginat)
+    {
+        <tr>
+            <Paginat TotalPages="TotalPages" CurrentPage="CurrentPage" CurrentPageValueChanged="CurrentPageValue"
+                PageSizeChanged="PageSizeChanged" />
+        </tr>
+    }
+
+    <tr>
+        <td></td>
+    </tr>
+    @if (showItemDetail)
+    {
+        <tr>
+            <td id="itemUpdateButton" style="display: @ShowItemUpdateButton;">
+                <button class="btn btn-success" @onclick="ItemDetailUpdateAsync">Update ItemDetails</button>
+            </td>
+        </tr>
+        <tr>
+            <ItemDetails DetailItems="UserInRoles" CurrentItem="@CurrentItem" />
+        </tr>
+    }
+    @if (showItemDatailUpdate)
+    {
+        <tr>
+            <SelectItemComponent DetailItems="UserInRolesToUpdate" SelectedItems="SelectItems" />
+        </tr>
+        <tr>
+            <td>
+                <button class="btn btn-success" @onclick="ItemDetailUpdateCommitAsync">Update</button>
+                <button class="btn btn-success" @onclick="ItemDetailUpdateCancel">Cancel</button>
+            </td>
+        </tr>
+    }
+}
+@code {
+    private string? ServiceRequest;
+    private string? SearchString { get; set; }
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 5;
+    private int TotalPages { get; set; }
+    private IEnumerable<UserInfo>? DateSource { get; set; }
+    private IEnumerable<UserInfo>? DateSourceFilter { get; set; }
+    private List<UserInfo> Items = new();
+    private List<string> TitleNames = new List<string> { "UserName", "Email", "CreateDatetime", "Position" };
+    private CreateUser addUser = new CreateUser();
+    private UserInfo editUser = new UserInfo();
+    private UserPassword userPassword = new UserPassword();
+    private List<UserInRole> UserInRoles = new();
+    private List<UserInRole> UserInRolesToUpdate = new();
+    private bool showMessage = false;
+    private string? Message { get; set; }
+    private bool showEditItem = false;
+    private bool showAddItem = false;
+    private bool showAddButton = true;
+    private bool showItemDetail = false;
+    private bool showItemDatailUpdate = false;
+    private string? ShowItemUpdateButton;
+    private bool showPaginat = true;
+    private bool showTable = true;
+    private List<UserInRole> SelectItems = new();
+    private string? CurrentItem { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
+        ServiceRequest = $"{Config.GetValue<string>("BackendUrl")}/User";
+        var requestUrl = $"{ServiceRequest}/GetUsers";
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        DateSource = await httpClient.GetFromJsonAsync<IEnumerable<UserInfo>>(requestUrl);
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        GetItems();
+    }
+    private void GetItems()
+    {
+        if (string.IsNullOrEmpty(SearchString))
+        {
+            Items = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+        else
+        {
+            DateSourceFilter = DateSource.Where(r => r.UserName.Contains(SearchString)).ToList();
+            TotalPages = DateSourceFilter.Count() % PageSize == 0 ? DateSourceFilter.Count() / PageSize : DateSourceFilter.Count() /
+            PageSize + 1;
+            Items = DateSourceFilter.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+        }
+    }
+    private void AddUserButton()
+    {
+        showAddButton = false;
+        showItemDetail = false;
+        showAddItem = true;
+    }
+    private async Task AddItmAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PostAsJsonAsync<CreateUser>($"{ServiceRequest}/AddUser", addUser);
+        if (result.IsSuccessStatusCode)
+        {
+            CurrentPage = TotalPages;
+            await OnInitializedAsync();
+            showEditItem = false;
+            showAddItem = false;
+            showAddButton = true;
+            await ShowMessages("Add item Succes!");
+        }
+        else
+        {
+            await ShowMessages("Add item falit!user is exists");
+            return;
+        }
+    }
+    private void EditItemAsync(string user)
+    {
+        if (Items is not null)
+        {
+            editUser = Items.Single(u => u.UserName == user);
+            CurrentItem = user;
+            showAddItem = false;
+            showAddButton = false;
+            showItemDetail = false;
+            showEditItem = true;
+        }
+    }
+    private async Task SaveItemAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await
+        httpClient.PutAsJsonAsync($"{ServiceRequest}/EditUser?userName={CurrentItem}", editUser);
+        if (result.IsSuccessStatusCode)
+        {
+            await OnInitializedAsync();
+            showEditItem = false;
+            showAddButton = true;
+            await ShowMessages("Update item Succes!");
+        }
+        else
+        {
+            await ShowMessages("Update item falit!! user not found?");
+            //Messages = "Update item falit!";
+            return;
+        }
+    }
+    private void CancelChange(MouseEventArgs e)
+    {
+        showAddItem = false;
+        showEditItem = false;
+        showAddButton = true;
+        CurrentItem = null;
+    }
+
+    private async Task EnableUserAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PutAsJsonAsync($"{ServiceRequest}/EnableUser?userName={CurrentItem}", CurrentItem);
+        if (result.IsSuccessStatusCode)
+        {
+            await ShowMessages("User Enable!");
+        }
+        await OnInitializedAsync();
+    }
+    private async Task DisableUserAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PutAsJsonAsync($"{ServiceRequest}/DisableUser?userName={CurrentItem}", CurrentItem);
+        if (result.IsSuccessStatusCode)
+        {
+            await ShowMessages("User Disable!!");
+        }
+        await OnInitializedAsync();
+    }
+    private async Task ResetPasswordAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PostAsJsonAsync($"{ServiceRequest}/RestUserPassword?userName={CurrentItem}",
+        userPassword);
+        if (result.IsSuccessStatusCode)
+        {
+            await ShowMessages("UserPassword Reset!!");
+        }
+    }
+    private async Task Search()
+    {
+        CurrentPage = 1;
+        await OnInitializedAsync();
+    }
+    private async Task ItemDetailAsync(string itemName)
+    {
+        showItemDetail = true;
+        UserInRoles.Clear();
+        UserInRolesToUpdate.Clear();
+        CurrentItem = itemName;
+        await GetUserInRoleAsync(CurrentItem);
+    }
+    private async Task ItemDetailUpdateAsync()
+    {
+        showAddItem = false;
+        showAddButton = false;
+        showEditItem = false;
+        showTable = false;
+        showPaginat = false;
+        ShowItemUpdateButton = "none";
+        showItemDatailUpdate = true;
+        await GetUserInRoleAsync(CurrentItem);
+    }
+    private async Task ItemDetailUpdateCommitAsync()
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        var result = await httpClient.PutAsJsonAsync($"{ServiceRequest}/UpdateRoleOwnUser?userName={CurrentItem}", SelectItems);
+        if (result.IsSuccessStatusCode)
+        {
+            SelectItems.Clear();
+            await ItemDetailAsync(CurrentItem);
+            showAddButton = true;
+            showTable = true;
+            showPaginat = true;
+            ShowItemUpdateButton = "inherit";
+            showItemDatailUpdate = false;
+            await ShowMessages("UserRoleDetail Update!!");
+        }
+        else
+        {
+            SelectItems.Clear();
+            await ShowMessages("UserRoleDetail Update falit!!");
+        }
+    }
+    private void ItemDetailUpdateCancel()
+    {
+        SelectItems.Clear();
+        showAddButton = true;
+        showTable = true;
+        showPaginat = true;
+        ShowItemUpdateButton = "inherit";
+        showItemDatailUpdate = false;
+    }
+    private async Task GetUserInRoleAsync(string itemName)
+    {
+        var httpClient = await getHttpClient.GetPrivateHttpClient();
+        IEnumerable<UserInRole> users = await
+        httpClient.GetFromJsonAsync<UserInRole[]>($"{ServiceRequest}/GetRoleOwnUser?userName={itemName}");
+        UserInRolesToUpdate = users.OrderByDescending(u => u.IsSelect).ToList();
+        UserInRoles = users.Where(u => u.IsSelect == true).ToList();
+    }
+    private void CurrentPageValue(int newPage)
+    {
+        CurrentPage = newPage;
+        GetItems();
+    }
+    private void PageSizeChanged(int newPageSize)
+    {
+        PageSize = newPageSize;
+        TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
+        CurrentPage = 1;
+        GetItems();
+    }
+    private async Task ShowMessages(string messages)
+    {
+        Message = messages;
+        showMessage = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        showMessage = false;
+        StateHasChanged();
+    }
+}

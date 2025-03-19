@@ -1,0 +1,31 @@
+﻿@namespace Components
+@typeparam T
+@typeparam H
+
+
+<tr>
+    @foreach (var item in Title)
+    {
+        <th>
+            @Labels(item)
+        </th>
+    }
+</tr>
+<tr>
+    @ItemDetails(Item)
+</tr>
+
+
+@code {
+    [Parameter, EditorRequired]
+    public T Item { get; set; } = default!;
+    [Parameter]
+    public ICollection<H> Title { get; set; }
+    [Parameter]
+    public RenderFragment<H> Labels { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment<T> ItemDetails { get; set; } = default!;
+
+
+}

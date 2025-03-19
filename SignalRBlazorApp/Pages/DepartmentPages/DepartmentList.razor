@@ -1,10 +1,5 @@
-﻿@page "/Departments"
-@using Blazored.LocalStorage
-@using DateClassLibrary.Data
-@using Microsoft.AspNetCore.SignalR.Client
-@inject IConfiguration Config
-@inject ILocalStorageService localStorageService
-@inject NavigationManager NavigationManager
+﻿
+@page "/Departments"
 
 @if (Departments == null)
 {
@@ -18,7 +13,7 @@ else
             <input @bind="NewDepName" placeholder="New DepartmentName" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="AddItem">Add</button>
+            <button class="btn btn-success" @onclick="AddItemAsync">Add</button>
         </td>
         <td>
             <input @bind="SearchString" />
@@ -31,7 +26,7 @@ else
             <input @bind="department.Name" />
         </td>
         <td class="text-center">
-            <button class="btn btn-success" @onclick="SaveItem">
+            <button class="btn btn-success" @onclick="SaveItemAsync">
                 Save
             </button>
             <button class="btn btn-danger" @onclick="CancelChange">
@@ -40,7 +35,7 @@ else
         </td>
     </tr>
     <tr id="confirmDelSpan" style="display:@DelConfirmStyle">
-        <DeleteConfirm ItemName="@department.Name" OnCancelChange="CancelChange" OnDeleteItem="DeleteItem"/>
+        <DeleteConfirm ItemName="@department.Name" OnCancelChange="CancelChange" OnDeleteItem="DeleteItemAsync" />
     </tr>
     <table class="table">
         <thead>
@@ -60,7 +55,7 @@ else
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td class="text-center">
-                        <button class="btn btn-warning" @onclick="@(() => ItemDetail(item.Id))">
+                        <button class="btn btn-warning" @onclick="@(() => ItemDetailAsync(item.Id))">
                             Detail
                         </button>
                         <button class="btn btn-warning" @onclick="@(() => EditDepartment(item.Id))">
@@ -121,7 +116,7 @@ else
 
         ServiceRequest = $"{Config.GetValue<string>("BackendUrl")}/Deparment";
         var httpClient = await getHttpClient.GetPrivateHttpClient();
-        var requestUrl = $"{ServiceRequest}/GetAll";
+        var requestUrl = $"{ServiceRequest}/GetItems";
         DateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
         TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
 
@@ -130,15 +125,15 @@ else
             if (notemsg == "Update")
             {
                 DateSource = await httpClient.GetFromJsonAsync<Department[]>(requestUrl);
-                await GetDepartments();
+                GetDepartments();
             }
             await InvokeAsync(StateHasChanged);
         });
         await hubConnection.StartAsync();
 
-        await GetDepartments();
+        GetDepartments();
     }
-    private async Task GetDepartments()
+    private void GetDepartments()
     {
         if (string.IsNullOrEmpty(SearchString))
         {
@@ -151,7 +146,7 @@ else
             Departments = DateSource.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
         }
     }
-    private async Task EditDepartment(long id)
+    private void EditDepartment(long id)
     {
         if (Departments is not null)
         {
@@ -161,7 +156,7 @@ else
             EditRowStyle = "table-row";
         }
     }
-    private async Task AddItem()
+    private async Task AddItemAsync()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (!string.IsNullOrEmpty(NewDepName))
@@ -174,28 +169,28 @@ else
             EditRowStyle = "none";
         }
     }
-    private async Task Search()
+    private void Search()
     {
 
     }
-    private async Task SaveItem()
+    private async Task SaveItemAsync()
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (department is not null)
         {
             await httpClient.PutAsJsonAsync($"{ServiceRequest}/EditItem?id={department.Id}", department);
         }
-        await GetDepartments();
+        GetDepartments();
         EditRowStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async Task CancelChange(MouseEventArgs e)
+    private void CancelChange(MouseEventArgs e)
     {
         EditRowStyle = "none";
         DelConfirmStyle = "none";
         AddRowStyle = "table-row";
     }
-    private async Task DeleteItem(MouseEventArgs e)
+    private async Task DeleteItemAsync(MouseEventArgs e)
     {
         var httpClient = await getHttpClient.GetPrivateHttpClient();
         if (department is not null)
@@ -207,9 +202,8 @@ else
         AddRowStyle = "table-row";
         ShowDepDetail = "none";
     }
-    private async Task ItemDetail(long id)
+    private async Task ItemDetailAsync(long id)
     {
-        ShowDepDetail = "inherit";
         Persons = new List<Person>();
         ShowDepDetail = "inherit";
         var httpClient = await getHttpClient.GetPrivateHttpClient();
@@ -222,20 +216,20 @@ else
             }
         }
     }
-    private async Task CurrentPageValue(int newPage)
+    private void CurrentPageValue(int newPage)
     {
         CurrentPage = newPage;
-        await GetDepartments();
+        GetDepartments();
     }
-    private async Task PageSizeChanged(int newPageSize)
+    private void PageSizeChanged(int newPageSize)
     {
         PageSize = newPageSize;
         TotalPages = DateSource.Count() % PageSize == 0 ? DateSource.Count() / PageSize : DateSource.Count() / PageSize + 1;
         CurrentPage = 1;
-        await GetDepartments();
+        GetDepartments();
     }
 
-    private async Task DeleteConfirm(long id)
+    private void DeleteConfirm(long id)
     {
         department = Departments.Single(i => i.Id == id);
         AddRowStyle = "none";

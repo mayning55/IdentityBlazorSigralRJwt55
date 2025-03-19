@@ -7,8 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using LoginClassLibrary.Login;
 
 namespace ClassLibrary.Services
 {
@@ -62,10 +60,6 @@ namespace ClassLibrary.Services
                 options.Password.RequiredUniqueChars = 3;//可重复唯一
                 options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultAuthenticatorProvider;//根据Token重置密码
             });
-            services.Configure<MvcOptions>(opt =>
-            {
-                opt.Filters.Add<JWTVerCheckFilter>();
-            });//添加过滤器
             services.AddHostedService<ClassInit>();//注册托管服务，初始化Admin信息
             services.AddScoped<InitAdmin>();//初始化Admin用户，完成后可删除。
             return services;
