@@ -1,0 +1,44 @@
+﻿<ul class="tree-view">
+    <li >
+        <a @onclick="()=>OnCurrentNodeClicked(Organization)">
+            @DisplayIcon()
+            @Organization.Name
+        </a>
+        @if (showedSub)
+        {
+            @foreach (Organization sDepar in Organization.OrganizationSub)
+            {
+                <OrgTreeView Organization="sDepar" OnClickNode="OnSubNodeClicked" />
+            }
+        }
+    </li>
+</ul>
+
+@code {
+    [Parameter]
+    public Organization Organization { get; set; } = new Organization();
+    [Parameter]
+    public EventCallback<Organization> OnClickNode { get; set; }
+    private bool showedSub;
+    private bool isSelect=false;
+    private void OnCurrentNodeClicked(Organization organization)
+    {
+
+        showedSub = !showedSub;
+        OnClickNode.InvokeAsync(organization);
+        isSelect=true;
+    }
+    private void OnSubNodeClicked(Organization subOrg)
+    {
+        OnClickNode.InvokeAsync(subOrg);
+    }
+    private string DisplayIcon()
+    {
+        if (!Organization.OrganizationSub.Any())
+        {
+            return "";
+        }
+        return showedSub ? "-" : "+";
+    }
+
+}

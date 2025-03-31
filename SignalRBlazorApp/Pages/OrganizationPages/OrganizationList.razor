@@ -1,0 +1,208 @@
+﻿@page "/Organizations"
+
+@if (showMessage)
+{
+    <ShowMessagesComponent Messages="@Message" />
+}
+@if (showAddItem)
+{
+    <GenerAddItem Item="addOrg" T="Organization" Title="TitleNameAdd" H="string" Context="context">
+        <Labels>
+            <div>
+                @context
+            </div>
+        </Labels>
+        <ItemDetails>
+            <td>
+                <input @bind-value="context.Name" class="form-control" required />
+            </td>
+            <td>
+                <a>@selectOrg.Name</a>
+            </td>
+        </ItemDetails>
+    </GenerAddItem>
+    <button class="btn btn-success" @onclick="AddItemAsync">Create</button>
+    <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+}
+@if (showEditItem)
+{
+    <GenerAddItem Item="selectOrg" T="Organization" Title="TitleNameAdd" H="string" Context="context">
+        <Labels>
+            <div>
+                @context
+            </div>
+        </Labels>
+        <ItemDetails>
+            <td>
+                <input @bind-value="context.Name" class="form-control" required />
+            </td>
+            <td>
+                <InputSelect @bind-Value="context.PorgId">
+                    @* <option value="">Select a PerentOrg</option>> *@
+                    @foreach (var value in Organizations)
+                    {
+                        <option value="@value.Id">@value.Name</option>
+                    }
+                </InputSelect>
+            </td>
+        </ItemDetails>
+    </GenerAddItem>
+    <button class="btn btn-success" @onclick="SaveItemAsync">Save</button>
+    <button class="btn btn-success" @onclick="CancelChange">Cancel</button>
+}
+@if (showDeleteConfirm)
+{
+    <DeleteConfirm ItemName="@selectOrg.Name" OnCancelChange="CancelChange" OnDeleteItem="DeleteItemAsync" />
+
+}
+<OrgTreeView Organization="organization" OnClickNode="OnCurrentNode" />
+@if (showAddButton)
+{
+    <td>
+        <button class="btn btn-success" @onclick="AddButton">Add</button>
+    </td>
+    @if (showEditButton)
+    {
+        <td>
+            <button class="btn btn-success" @onclick="EditButton">Edit</button>
+        </td>
+        <td>
+            <button class="btn btn-success" @onclick="DeleteButton">Delete</button>
+        </td>
+    }
+}
+
+@code {
+    private string? serviceRequest;
+    private Organization organization = new();
+    private List<Organization> Organizations = new();
+    private Organization selectOrg = new();
+    private Organization addOrg = new Organization();
+    private List<string> TitleNameAdd = new List<string> { "Name", "PernetOrg" };
+    private bool showMessage = false;
+    private string? Message;
+    private bool showAddButton = true;
+    private bool showEditButton = false;
+    private bool showDeleteButton = false;
+    private bool showAddItem = false;
+    private bool showEditItem = false;
+    private bool showDeleteConfirm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(await localStorageService.GetItemAsStringAsync("auth")!))
+        {
+            NavManager.NavigateTo("/login");
+            return;
+        }
+        serviceRequest = $"{Config.GetValue<string>("BackendUrl")}/Organization";
+        organization = await orgService.GetItemById(serviceRequest, 1);
+    }
+    private void OnCurrentNode(Organization org)
+    {
+        selectOrg = org;
+        showEditButton = true;
+        showDeleteButton = true;
+    }
+    private void AddButton()
+    {
+        showAddButton = false;
+        showDeleteConfirm = false;
+        showEditItem = false;
+        showAddItem = true;
+    }
+    private async Task AddItemAsync()
+    {
+        if (selectOrg is null)
+        {
+            addOrg.PorgId = 1;
+        }
+        else
+        {
+            addOrg.PorgId = selectOrg.Id;
+        }
+        var result = await orgService.AddItem(addOrg, serviceRequest);
+        if (result.Flag)
+        {
+            await OnInitializedAsync();
+            //showEditItem = false;
+            showAddItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+            return;
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private void CancelChange()
+    {
+        showEditItem = false;
+        showAddItem = false;
+        showDeleteConfirm = false;
+        showAddButton = true;
+    }
+    private async Task EditButton()
+    {
+
+
+        Organizations = await orgService.GetItems(serviceRequest);
+        showAddButton = false;
+        showAddItem = false;
+        showDeleteConfirm = false;
+        showEditItem = true;
+    }
+    private void DeleteButton()
+    {
+        showAddButton = false;
+        showAddItem = false;
+        showDeleteConfirm = true;
+        showEditItem = false;
+    }
+    private async Task SaveItemAsync()
+    {
+
+        var result = await orgService.EditItem(selectOrg, serviceRequest);
+        if (result.Flag)
+        {
+            await OnInitializedAsync();
+            showEditItem = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+            return;
+        }
+        else
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private async Task DeleteItemAsync(MouseEventArgs e)
+    {
+        
+        var result = await orgService.DeleteItem(serviceRequest, selectOrg.Id);
+        if (result.Flag)
+        {
+            await OnInitializedAsync();
+            showDeleteConfirm = false;
+            showAddButton = true;
+            await ShowMessages(result.Message);
+            return;
+        }
+        {
+            await ShowMessages(result.Message);
+            return;
+        }
+    }
+    private async Task ShowMessages(string messages)
+    {
+        Message = messages;
+        showMessage = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        showMessage = false;
+        StateHasChanged();
+    }
+}

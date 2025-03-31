@@ -31,6 +31,7 @@ builder.Services.AddScoped<IUser, LoginAuth>();//@
 builder.Services.AddScoped<IWebApiDataInterface<Department>, DeparmentData>();//注册接口和实现方法,下同
 builder.Services.AddScoped<IWebApiDataInterface<Author>, AuthorData>();
 builder.Services.AddScoped<IWebApiDataInterface<Book>, BookData>();
+builder.Services.AddScoped<IWebApiDataInterface<Organization>, OrganizationData>();
 
 
 var app = builder.Build();
@@ -41,6 +42,7 @@ using (var scope = app.Services.CreateScope())//种子 数据
     SeedDate.Initialize(services);
     SeedDate.InitializeDep(services);
     SeedDate.InitializeDepPerson(services);
+    SeedDate.InitializeOrganization(services);
 }
 
 app.UseResponseCompression();//5

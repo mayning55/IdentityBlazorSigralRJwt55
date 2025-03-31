@@ -28,6 +28,7 @@ builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<IUser, AccountAuth>();
 builder.Services.AddScoped<IClientDataInterface<Author>, ClientImplementation<Author>>();//注册接口和实现方法
 builder.Services.AddScoped<IClientDataInterface<Book>, ClientImplementation<Book>>();
+builder.Services.AddScoped<IClientDataInterface<Organization>, ClientImplementation<Organization>>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, LocalAuthenticationStateProvider>();//!!

@@ -67,5 +67,16 @@ namespace ClassLibrary.Settings
                 //无不特殊需求，可不必特殊外键。.HasForeignKey(c=>c.BookId)
             }
         }
+        public class OrganizationConfig : IEntityTypeConfiguration<Organization>
+        {
+            public void Configure(EntityTypeBuilder<Organization> builder)
+            {
+                builder.ToTable("Organizations");
+                builder.HasOne<Organization>(o => o.Porg)
+                        .WithMany(a => a.OrganizationSub)
+                        .HasForeignKey(x => x.PorgId);
+                        //.OnDelete(DeleteBehavior.Cascade);
+            }
+        }
     }
 }

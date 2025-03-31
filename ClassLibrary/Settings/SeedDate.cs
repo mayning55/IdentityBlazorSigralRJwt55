@@ -138,5 +138,26 @@ namespace ClassLibrary.Settings
                 dbContext.SaveChanges();
             }
         }
+        public static void InitializeOrganization(IServiceProvider serviceProvider)
+        {
+            using (var dbContext = new EFCoreDBContext(
+                serviceProvider.GetRequiredService<DbContextOptions<EFCoreDBContext>>()))
+            {
+                if (dbContext == null)
+                {
+                    throw new ArgumentNullException("Null dbContext");
+                }
+                if (dbContext.Organizations.Any())
+                {
+                    return;
+                }
+                dbContext.Organizations.AddRange(
+                    new Organization
+                    {
+                        Name = "Root",
+                    });
+                dbContext.SaveChanges();
+            }
+        }
     }
 }
