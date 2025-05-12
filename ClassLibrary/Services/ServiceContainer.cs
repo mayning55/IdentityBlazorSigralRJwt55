@@ -8,10 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+
 namespace ClassLibrary.Services
 {
     /// <summary>
-    /// 通过ConfigureServices 容器方法配置各服务，包含：数据库连接，Jwt，Identity用户登录。
+    /// 扩展方法以注册各服务，包含：数据库连接，Jwt，Identity用户登录。
+    /// https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-8.0#register-groups-of-services-with-extension-methods
     /// </summary>
     public static class ServiceContainer
     {
@@ -64,5 +66,14 @@ namespace ClassLibrary.Services
             services.AddScoped<InitAdmin>();//初始化Admin用户，完成后可删除。
             return services;
         }
+        //注册接口
+        // public static IServiceCollection AddDependencyGroup(
+        //      this IServiceCollection services)
+        // {
+        //     services.AddScoped<IWebApiDataInterface<Department>, DeparmentData>();
+        //     services.AddScoped<IWebApiDataInterface<Author>, AuthorData>();
+        //     services.AddScoped<IWebApiDataInterface<Book>, BookData>();
+        //     return services;
+        // }
     }
 }
