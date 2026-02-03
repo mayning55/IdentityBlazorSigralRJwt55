@@ -9,7 +9,7 @@
     {
         Task<List<T>> GetItems();
         Task<string> GetById(long id);
-        //Task<T> GetByName(string name);
+        //Task<T> GetByName(string name);//32循环！！！
         Task<T> GetItemById(long id);
         Task<IEnumerable<T>> SearchByName(string name);
         Task<Responses> AddItem(T item);
